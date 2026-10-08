@@ -53,3 +53,56 @@ exports.register = async (req, res) => {
     return res.status(500).json({ message: 'Server error. Please try again.' });
   }
 };
+exports.verifyOTP = async (req, res) => {
+  const { email, code } = req.body;
+
+  // Validate input
+  if (!email || !code) {
+    return res.status(400).json({ message: 'Email and verification code are required.' });
+  }
+
+  try {
+    // Find user by email
+    const [users] = await db.query(
+      'SELECT User_id, Account_status, Verification_code, Verification_expiry FROM User WHERE Email = ?',
+      [email]
+    );
+
+    if (users.length === 0) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    const user = users[0];
+
+    // Check if already active
+    if (user.Account_status === 'Active') {
+      return res.status(400).json({ message: 'Account is already verified.' });
+    }
+
+    // Check code matches
+    if (user.Verification_code !== code) {
+      return res.status(400).json({ message: 'Invalid verification code.' });
+    }
+
+    // Check expiry
+    const now = new Date();
+    const expiry = new Date(user.Verification_expiry);
+    if (now > expiry) {
+      return res.status(400).json({ message: 'Verification code has expired. Please request a new one.' });
+    }
+
+    // Activate the account and clear verification fields
+    await db.query(
+      'UPDATE User SET Account_status = ?, Verification_code = NULL, Verification_expiry = NULL WHERE User_id = ?',
+      ['Active', user.User_id]
+    );
+
+    return res.status(200).json({
+      message: 'Account verified successfully. You can now log in.',
+      email,
+    });
+  } catch (err) {
+    console.error('Verify OTP error:', err);
+    return res.status(500).json({ message: 'Server error. Please try again.' });
+  }
+};
