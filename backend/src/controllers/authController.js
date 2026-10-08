@@ -106,3 +106,110 @@ exports.verifyOTP = async (req, res) => {
     return res.status(500).json({ message: 'Server error. Please try again.' });
   }
 };
+exports.login = async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ message: 'Email and password are required.' });
+  }
+
+  try {
+    const [users] = await db.query(
+      'SELECT User_id, Email, Password, Account_status FROM User WHERE Email = ?',
+      [email]
+    );
+
+    if (users.length === 0) {
+      return res.status(401).json({ message: 'Invalid email or password.' });
+    }
+
+    const user = users[0];
+
+    if (user.Account_status !== 'Active') {
+      return res.status(403).json({
+        message: 'Account is not active. Please verify your email first.',
+      });
+    }
+
+    const bcrypt = require('bcrypt');
+    const match = await bcrypt.compare(password, user.Password);
+    if (!match) {
+      return res.status(401).json({ message: 'Invalid email or password.' });
+    }
+
+    const otp = generateOTP();
+    const expiry = new Date(Date.now() + 5 * 60 * 1000);
+
+    await db.query(
+      'UPDATE User SET Verification_code = ?, Verification_expiry = ? WHERE User_id = ?',
+      [otp, expiry, user.User_id]
+    );
+
+    await sendVerificationEmail(email, otp);
+
+    return res.status(200).json({
+      message: 'Credentials verified. Check your email for the login code.',
+      requiresOTP: true,
+      email,
+    });
+  } catch (err) {
+    console.error('Login error:', err);
+    return res.status(500).json({ message: 'Server error. Please try again.' });
+  }
+};
+
+exports.loginVerify = async (req, res) => {
+  const { email, code } = req.body;
+
+  if (!email || !code) {
+    return res.status(400).json({ message: 'Email and login code are required.' });
+  }
+
+  try {
+    const [users] = await db.query(
+      'SELECT User_id, User_name, Email, Account_status, Verification_code, Verification_expiry FROM User WHERE Email = ?',
+      [email]
+    );
+
+    if (users.length === 0) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    const user = users[0];
+
+    if (user.Verification_code !== code) {
+      return res.status(400).json({ message: 'Invalid login code.' });
+    }
+
+    const now = new Date();
+    const expiry = new Date(user.Verification_expiry);
+    if (now > expiry) {
+      return res.status(400).json({ message: 'Login code has expired. Please log in again.' });
+    }
+
+    await db.query(
+      'UPDATE User SET Verification_code = NULL, Verification_expiry = NULL WHERE User_id = ?',
+      [user.User_id]
+    );
+
+    const jwt = require('jsonwebtoken');
+    const token = jwt.sign(
+      { User_id: user.User_id, Email: user.Email },
+      process.env.JWT_SECRET || 'dev_secret',
+      { expiresIn: process.env.JWT_EXPIRES_IN || '1h' }
+    );
+
+    return res.status(200).json({
+      message: 'Login successful.',
+      token,
+      user: {
+        User_id: user.User_id,
+        User_name: user.User_name,
+        Email: user.Email,
+      },
+    });
+  } catch (err) {
+    console.error('Login verify error:', err);
+    return res.status(500).json({ message: 'Server error. Please try again.' });
+  }
+};
