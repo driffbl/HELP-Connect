@@ -1,9 +1,22 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import { Router } from '@angular/router';
 
 @Component({
-  imports: [],
   selector: 'app-dashboard',
-  styleUrl: './dashboard.css',
+  imports: [],
   templateUrl: './dashboard.html',
+  styleUrl: './dashboard.css',
 })
-export class Dashboard {}
+export class Dashboard {
+  private router = inject(Router);
+
+  user = JSON.parse(localStorage.getItem('user') || '{}');
+  userName = this.user.User_name || 'Student';
+  userEmail = this.user.Email || '';
+
+  logout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    this.router.navigate(['/']);
+  }
+}

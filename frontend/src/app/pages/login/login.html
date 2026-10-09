@@ -1,1 +1,33 @@
-<p>login works!</p>
+<div class="container">
+  <h1>Sign In</h1>
+
+  <div class="error" *ngIf="error">{{ error }}</div>
+
+  <form (ngSubmit)="onSubmit()">
+    <label>Email</label>
+    <input
+      type="email"
+      name="email"
+      [(ngModel)]="form.email"
+      placeholder="you@help.edu.my"
+      required
+    />
+
+    <label>Password</label>
+    <input
+      type="password"
+      name="password"
+      [(ngModel)]="form.password"
+      placeholder="Your password"
+      required
+    />
+
+    <button type="submit" [disabled]="loading">
+      {{ loading ? 'Signing in...' : 'Sign In' }}
+    </button>
+  </form>
+
+  <div class="link">
+    Don't have an account? <a routerLink="/signup">Register</a>
+  </div>
+</div>
