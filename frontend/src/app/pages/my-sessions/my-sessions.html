@@ -1,0 +1,21 @@
+<app-panel [title]="pageTitle()">
+  @if (rows().length === 0) {
+    <p class="empty" data-testid="no-sessions">No sessions found</p>
+  }
+
+  @for (r of rows(); track r.session.id) {
+    <a
+      class="link"
+      [routerLink]="['/sessions', r.session.id]"
+      [attr.data-testid]="'session-' + r.session.id"
+    >
+      <app-session-card
+        [ref]="r.ref"
+        [category]="r.session.category"
+        [title]="r.session.title"
+        [details]="r.details"
+        [status]="r.status"
+      />
+    </a>
+  }
+</app-panel>
