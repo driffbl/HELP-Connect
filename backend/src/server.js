@@ -22,6 +22,9 @@ app.use('/api/auth', authRoutes);
 const profileRoutes = require('./routes/profileRoutes');
 app.use('/api/profile', profileRoutes);
 
+const volunteerRoutes = require('./routes/volunteerRoutes');
+app.use('/api/volunteer', volunteerRoutes);
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`✅ HELP Connect API running on http://localhost:${PORT}`);
