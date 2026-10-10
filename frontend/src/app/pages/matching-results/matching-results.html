@@ -1,0 +1,88 @@
+<div class="page-container">
+  <!-- Top Red Navigation Header -->
+  <header class="app-header">
+    <div class="brand-title">HELP Connect</div>
+  </header>
+
+  <main class="main-content">
+    <div class="results-card">
+      <div class="card-header">
+        <button type="button" class="btn-back" (click)="onChangeCriteria()">
+          <span class="arrow">&larr;</span> Go Back
+        </button>
+        <h1 class="page-title">Available Volunteers</h1>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="loading-state">
+        <p>Analyzing request and finding suitable volunteers...</p>
+      </div>
+
+      <!-- State A: No Volunteers Found (FR18, Flow 5a)[cite: 7, 10] -->
+      <div *ngIf="!isLoading && volunteers.length === 0" class="no-volunteers-container">
+        <svg viewBox="0 0 48 48" class="person-outline-icon">
+          <path d="M24 8a8 8 0 1 0 0 16 8 8 0 0 0 0-16zm-4 8a4 4 0 1 1 8 0 4 4 0 0 1-8 0zm19 23v-1c0-4.97-4.03-9-9-9H18c-4.97 0-9 4.03-9 9v1a2 2 0 0 0 2 2h26a2 2 0 0 0 2-2zm-22-6h14c2.76 0 5 2.24 5 5H12c0-2.76 2.24-5 5-5z"/>
+        </svg>
+        <h2 class="empty-title">No volunteer found</h2>
+        <p class="empty-subtext">There are currently no volunteers matching your specific requirements.</p>
+        <button class="btn-primary mt-3" (click)="onChangeCriteria()">Change Support Request Criteria</button>
+      </div>
+
+      <!-- State B: Volunteers Found -->
+      <div *ngIf="!isLoading && volunteers.length > 0" class="volunteers-grid">
+        <article *ngFor="let v of volunteers" class="volunteer-card">
+          <div class="avatar-container">
+            <img [src]="v.avatar_url" [alt]="v.user_name" class="avatar-img" />
+          </div>
+          <h3 class="volunteer-name">{{ v.user_name }}</h3>
+
+          <div class="tags-container">
+            <span *ngFor="let cat of v.categories" class="category-tag">#{{ cat }}</span>
+          </div>
+
+          <p class="meta-text available-schedule">Available on: {{ v.availability_notes }}</p>
+          <p class="meta-text mode-text">{{ v.preferred_mode }}</p>
+
+          <div class="rating-row">
+            <span class="rating-value">{{ v.rating }}</span>
+            <span class="star-icon">&#9734;</span>
+            <span class="reviews-count">({{ v.completed_sessions }})</span>
+          </div>
+
+          <!-- Select Trigger -->
+          <button class="btn-select" (click)="initiateSelection(v)">Select Volunteer</button>
+        </article>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal 1: Review & Confirm Selection -->
+  <div *ngIf="showReviewModal" class="modal-backdrop">
+    <div class="modal-dialog">
+      <h2 class="modal-title">Confirm Selection</h2>
+      <p class="modal-body">
+        You are about to send a support request to <strong>{{ selectedVolunteer?.user_name }}</strong>.
+        Do you want to confirm this selection or view other volunteers?
+      </p>
+      <div class="modal-actions-row">
+        <button type="button" class="btn-secondary" (click)="cancelSelection($event)">View Others</button>
+        <button type="button" class="btn-primary" (click)="confirmSelection($event)">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2: Success / Request Sent -->
+  <div *ngIf="showConfirmedModal" class="modal-backdrop">
+    <div class="modal-dialog success-dialog">
+      <h2 class="modal-title">Request Confirmed!</h2>
+      <p class="modal-body">
+        Your support request has been successfully routed to <strong>{{ selectedVolunteer?.user_name }}</strong>.
+        The status is now set to Pending.
+      </p>
+      <div class="modal-actions-column">
+        <button type="button" class="btn-primary w-100" (click)="closeConfirmedModal($event)">OK</button>
+      </div>
+    </div>
+  </div>
+
+</div>

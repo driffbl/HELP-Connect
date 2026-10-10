@@ -1,0 +1,189 @@
+:host {
+  display: block;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: #f7f9fa;
+  min-height: 100vh;
+}
+
+/* App Header matching Figure 23 */
+.app-header {
+  background-color: #ff4d4d;
+  color: #ffffff;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+}
+
+.brand-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+
+.icon-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  padding: 0;
+}
+
+.header-icon {
+  width: 26px;
+  height: 26px;
+  fill: #ffffff;
+}
+
+/* Dashboard Container */
+.main-content {
+  padding: 24px 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.dashboard-card {
+  width: 100%;
+  max-width: 900px;
+  background: #ffffff;
+  border: 1.5px solid #ff4d4d;
+  border-radius: 8px;
+  padding: 24px 32px 36px;
+  box-sizing: border-box;
+}
+
+.card-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 28px;
+  width: 100%;
+}
+
+.btn-back {
+  position: absolute;
+  left: 0;
+  background: transparent !important;
+  border: none !important;
+  color: #ff4d4d;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 !important;
+  width: auto !important;
+}
+
+.page-title {
+  color: #ff4d4d;
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+/* List & Card Styling */
+.requests-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.request-card {
+  background: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  border: 1px solid #e5e7eb;
+}
+
+.card-top-strip {
+  background-color: #ff4d4d;
+  color: #ffffff;
+  padding: 6px 16px;
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.card-body {
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.details-column {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.request-title {
+  color: #2b3a4a;
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin: 0 0 6px 0;
+  padding: 0;
+  text-align: left;
+}
+
+.meta-data {
+  color: #6b7280;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.status-column {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  height: 100%;
+  padding-top: 10px;
+  margin: 0;
+}
+
+.status-text {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.text-pending { color: #ff4d4d; }
+.text-accepted { color: #10b981; }
+.text-cancelled { color: #6b7280; }
+
+/* Dynamic Change Volunteer Button */
+.btn-change-volunteer {
+  margin-top: 12px;
+  background-color: #f59e0b !important;
+  color: #ffffff !important;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 14px !important;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  width: fit-content !important;
+}
+
+.btn-change-volunteer:hover {
+  background-color: #d97706 !important;
+}

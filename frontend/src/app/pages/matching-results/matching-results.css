@@ -1,0 +1,386 @@
+/* =========================================================
+   PAGE / GLOBAL
+   ========================================================= */
+
+:host {
+  display: block;
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: #f7f9fa;
+  color: #333333;
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.app-header {
+  height: 56px;
+  padding: 0 24px;
+
+  display: flex;
+  align-items: center;
+
+  background-color: #ff4d4d;
+  color: #ffffff;
+}
+
+.brand-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   MAIN CONTENT / RESULTS CARD
+   ========================================================= */
+
+.main-content {
+  display: flex;
+  justify-content: center;
+
+  padding: 24px 20px;
+}
+
+.results-card {
+  width: 100%;
+  max-width: 950px;
+
+  padding: 24px 32px 36px;
+
+  background-color: #ffffff;
+  border: 1.5px solid #ff4d4d;
+  border-radius: 8px;
+}
+
+
+/* =========================================================
+   CARD HEADER
+   ========================================================= */
+
+.card-header {
+  position: relative;
+
+  width: 100%;
+  margin-bottom: 28px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.page-title {
+  margin: 0;
+
+  color: #ff4d4d;
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   BACK BUTTON
+   ========================================================= */
+
+.btn-back {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  z-index: 2;
+
+  transform: translateY(-50%);
+
+  width: auto !important;
+  padding: 6px 0 !important;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+
+  color: #ff4d4d;
+  font-size: 0.95rem;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.btn-back:hover {
+  background: transparent !important;
+  color: #c32e3a;
+  text-decoration: underline;
+}
+
+
+/* =========================================================
+   LOADING / EMPTY STATE
+   ========================================================= */
+
+.loading-state,
+.no-volunteers-container {
+  padding: 60px 0;
+  text-align: center;
+}
+
+.person-outline-icon {
+  width: 64px;
+  height: 64px;
+
+  margin-bottom: 16px;
+
+  fill: #4b5563;
+}
+
+.empty-title {
+  margin: 0 0 8px;
+
+  color: #1f2937;
+  font-size: 1.5rem;
+}
+
+.empty-subtext {
+  margin-bottom: 24px;
+
+  color: #6b7280;
+}
+
+
+/* =========================================================
+   VOLUNTEER GRID
+   ========================================================= */
+
+.volunteers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+
+/* =========================================================
+   VOLUNTEER CARD
+   ========================================================= */
+
+.volunteer-card {
+  padding: 20px;
+
+  border: 1.5px solid #ff4d4d;
+  border-radius: 8px;
+
+  text-align: center;
+}
+
+
+/* =========================================================
+   VOLUNTEER AVATAR
+   ========================================================= */
+
+.avatar-container {
+  width: 80px;
+  height: 80px;
+
+  margin: 0 auto 12px;
+
+  overflow: hidden;
+
+  border-radius: 50%;
+  background-color: #f3f4f6;
+}
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+}
+
+
+/* =========================================================
+   VOLUNTEER INFORMATION
+   ========================================================= */
+
+.volunteer-name {
+  margin: 0 0 12px;
+
+  color: #ff4d4d;
+  font-size: 1.15rem;
+}
+
+.tags-container {
+  margin-bottom: 12px;
+}
+
+.category-tag {
+  display: inline-block;
+
+  margin: 2px;
+  padding: 4px 8px;
+
+  background-color: #ff4d4d;
+  color: #ffffff;
+
+  border-radius: 4px;
+
+  font-size: 0.75rem;
+}
+
+.meta-text {
+  margin: 4px 0;
+
+  color: #6b7280;
+  font-size: 0.8rem;
+}
+
+.rating-row {
+  margin: 12px 0;
+
+  color: #ff4d4d;
+  font-weight: 700;
+}
+
+.star-icon {
+  color: #f59e0b;
+}
+
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+.btn-select,
+.btn-primary {
+  width: 100%;
+
+  padding: 10px 20px;
+
+  background-color: #ff4d4d;
+  color: #ffffff;
+
+  border: none;
+  border-radius: 6px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.btn-select:hover,
+.btn-primary:hover {
+  background-color: #e63939;
+}
+
+.btn-secondary {
+  padding: 10px 20px;
+
+  background-color: #e5e7eb;
+  color: #374151;
+
+  border: none;
+  border-radius: 6px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.btn-secondary:hover {
+  background-color: #d1d5db;
+}
+
+
+/* =========================================================
+   UTILITY CLASSES
+   ========================================================= */
+
+.mt-3 {
+  margin-top: 16px;
+}
+
+.w-100 {
+  width: 100%;
+}
+
+
+/* =========================================================
+   MODAL
+   ========================================================= */
+
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+
+  width: 100vw;
+  height: 100vh;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.modal-dialog {
+  position: relative;
+  z-index: 10000;
+
+  width: 90%;
+  max-width: 420px;
+
+  padding: 24px;
+
+  background-color: #ffffff;
+  border-radius: 12px;
+
+  text-align: center;
+
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+
+  pointer-events: auto;
+}
+
+.success-dialog {
+  border-top: 6px solid #10b981;
+}
+
+.modal-title {
+  margin: 0 0 12px;
+
+  color: #1f2937;
+}
+
+.modal-body {
+  margin-bottom: 24px;
+
+  color: #4b5563;
+
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   MODAL BUTTON AREA
+   ========================================================= */
+
+.modal-actions-row {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+
+  margin-top: 20px;
+}
+
+.modal-actions-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-actions-row button,
+.modal-actions-column button {
+  z-index: 10001;
+  cursor: pointer;
+}

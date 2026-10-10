@@ -1,0 +1,42 @@
+:host { display: block; font-family: -apple-system, sans-serif; background-color: #f7f9fa; min-height: 100vh; }
+
+.app-header { background-color: #ff4d4d; color: #ffffff; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; }
+.brand-title { font-size: 1.25rem; font-weight: 700; }
+.header-right { display: flex; align-items: center; gap: 16px; }
+
+.icon-btn { background: transparent; border: none; cursor: pointer; padding: 0; display: flex; }
+.header-icon { width: 26px; height: 26px; fill: #ffffff; }
+
+.main-content { padding: 24px 20px; display: flex; justify-content: center; }
+.dashboard-card { width: 100%; max-width: 800px; background: #ffffff; border: 1.5px solid #ff4d4d; border-radius: 8px; padding: 24px 32px 36px; }
+
+.card-header { position: relative; display: flex; align-items: center; justify-content: center; margin-bottom: 28px; width: 100%; }
+.btn-back { position: absolute; left: 0; background: transparent !important; border: none !important; color: #ff4d4d; font-weight: 600; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 0 !important; width: auto !important; }
+.page-title { color: #ff4d4d; font-size: 1.75rem; font-weight: 700; margin: 0; }
+
+.empty-state { text-align: center; padding: 40px 0; color: #6b7280; font-size: 1.1rem; }
+
+.requests-list { display: flex; flex-direction: column; gap: 20px; }
+.request-card { border: 1.5px solid #e5e7eb; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+
+.card-top-strip { background-color: #f3f4f6; color: #374151; padding: 8px 16px; display: flex; justify-content: space-between; font-weight: 600; font-size: 0.9rem; border-bottom: 1px solid #e5e7eb; }
+
+.card-body { padding: 16px; }
+.details-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+.request-title { color: #1f2937; font-size: 1.25rem; font-weight: 700; margin: 0; }
+.status-badge.pending { color: #f59e0b; font-weight: 700; font-size: 1rem; }
+
+.meta-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
+.meta-data { color: #4b5563; font-size: 0.9rem; margin: 0; }
+.meta-data strong { color: #374151; font-weight: 600; margin-right: 6px; }
+
+.card-actions { display: flex; justify-content: flex-end; gap: 12px; padding: 16px; border-top: 1px solid #e5e7eb; background-color: #fafafa; }
+.btn-reject, .btn-accept { font-weight: 600; font-size: 0.95rem; padding: 8px 20px; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; border: none; }
+.btn-reject { background-color: transparent; color: #6b7280; }
+.btn-reject:hover { color: #374151; text-decoration: underline; }
+.btn-accept { background-color: #ff4d4d; color: #ffffff; }
+.btn-accept:hover { background-color: #e63939; }
+
+.description-data {
+  line-height: 1.5;
+}

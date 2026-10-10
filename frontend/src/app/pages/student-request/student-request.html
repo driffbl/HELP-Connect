@@ -1,0 +1,70 @@
+<div class="page-container">
+  <!-- Top Navigation Header matching Figure 23 -->
+  <header class="app-header">
+    <div class="brand-title">HELP Connect</div>
+    <div class="header-right">
+      <button type="button" class="icon-btn">
+        <svg viewBox="0 0 24 24" class="header-icon"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+      </button>
+      <button type="button" class="icon-btn">
+        <svg viewBox="0 0 24 24" class="header-icon"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="dashboard-card">
+
+      <!-- Screen Title & Back Button -->
+      <div class="card-header">
+        <button type="button" class="btn-back" (click)="onGoBack()">
+          <span class="arrow">&larr;</span> Go Back
+        </button>
+        <h1 class="page-title">My Student Sessions</h1>
+      </div>
+
+      <!-- Request Cards List -->
+      <div class="requests-list">
+        <article *ngFor="let req of requests" class="request-card">
+
+          <!-- Card Top Red Header Strip -->
+          <div class="card-top-strip">
+            <span class="request-id">{{ req.request_id }}</span>
+            <span class="request-category">#{{ req.category }}</span>
+          </div>
+
+          <!-- Card Body -->
+          <div class="card-body">
+            <div class="details-column">
+              <h2 class="request-title">{{ req.title }}</h2>
+              <p class="meta-data">Submitted on {{ formatDate(req.created_at) }}</p>
+              <p class="meta-data">Volunteer chosen: {{ req.volunteer_name }}</p>
+              <p class="meta-data">Mode: {{ req.support_mode }}</p>
+
+              <!-- Dynamic Change Volunteer Button (Alternative Flow 12a) -->
+              <button
+                *ngIf="isStalePending(req)"
+                class="btn-change-volunteer"
+                (click)="onChangeVolunteer(req)">
+                Change Volunteer (No Response)
+              </button>
+            </div>
+
+            <!-- Status Indicator -->
+            <div class="status-column">
+              <span class="status-text" [ngClass]="{
+                'text-pending': req.status === 'Pending',
+                'text-accepted': req.status === 'Accepted',
+                'text-cancelled': req.status === 'Cancelled' || req.status === 'Rejected'
+              }">
+                {{ req.status }}
+              </span>
+            </div>
+          </div>
+
+        </article>
+      </div>
+
+    </div>
+  </main>
+</div>
