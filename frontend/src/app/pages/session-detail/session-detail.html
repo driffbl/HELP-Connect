@@ -1,4 +1,4 @@
-<app-panel title="Session Details" backLink="/sessions">
+<app-panel title="Session Details" [backLink]="backLink">
   @if (notice(); as n) {
     <p class="notice" role="status" data-testid="notice">{{ n }}</p>
   }

@@ -1,12 +1,22 @@
 import { Component, computed, inject } from '@angular/core';
-import { MockAuth } from '../../services/mock-auth';
+import { RouterLink, RouterLinkActive } from '@angular/router';
+import { CurrentUser } from '../../services/current-user';
 
 /** Top bar from the wireframes. The Student/Volunteer pill drives the mock login for now. */
 @Component({
+  imports: [RouterLink, RouterLinkActive],
   selector: 'app-header',
   template: `
     <header class="bar">
       <span class="brand" data-testid="brand">HELP Connect</span>
+      <nav class="links" aria-label="Temporary navigation">
+        <a routerLink="/sessions" routerLinkActive="active" data-testid="nav-sessions"
+          >My Sessions</a
+        >
+        <a routerLink="/past-sessions" routerLinkActive="active" data-testid="nav-past-sessions"
+          >Past Sessions</a
+        >
+      </nav>
       <div class="right">
         <div class="toggle" role="group" aria-label="Switch role">
           <button
@@ -63,6 +73,33 @@ import { MockAuth } from '../../services/mock-auth';
         background: var(--brand, #ff5252);
         color: #fff;
       }
+      .links {
+        display: flex;
+        gap: 20px;
+        margin-right: auto;
+        margin-left: 32px;
+      }
+      .links a {
+        color: #fff;
+        font-weight: 600;
+        text-decoration: none;
+        padding: 4px 0;
+        border-bottom: 2px solid transparent;
+      }
+      .links a.active,
+      .links a:hover {
+        border-bottom-color: #fff;
+        color: #fff;
+      }
+      .links a:focus-visible {
+        outline: 3px solid #fff;
+        outline-offset: 2px;
+      }
+      @media (max-width: 720px) {
+        .links {
+          display: none;
+        }
+      }
       .brand {
         font-size: 1.5rem;
         font-weight: 800;
@@ -114,6 +151,6 @@ import { MockAuth } from '../../services/mock-auth';
   ],
 })
 export class AppHeader {
-  readonly auth = inject(MockAuth);
-  readonly role = computed(() => this.auth.currentUser().role);
+  readonly auth = inject(CurrentUser);
+  readonly role = computed(() => this.auth.user().role);
 }

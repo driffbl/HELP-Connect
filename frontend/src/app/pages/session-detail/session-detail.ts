@@ -5,7 +5,7 @@ import { Panel } from '../../components/panel/panel';
 import { SessionCard } from '../../components/session-card/session-card';
 import { StarRating } from '../../components/star-rating/star-rating';
 import { Clock } from '../../services/clock';
-import { MockAuth } from '../../services/mock-auth';
+import { CurrentUser } from '../../services/current-user';
 import { SessionStore } from '../../services/session-store';
 import { formatDay, sessionDetails, sessionRef } from '../../utils/session-format';
 import * as rules from '../../utils/session-rules';
@@ -20,13 +20,16 @@ type PendingAction = 'cancel' | 'decline';
 })
 export class SessionDetail {
   private route = inject(ActivatedRoute);
-  private auth = inject(MockAuth);
+  private auth = inject(CurrentUser);
   private store = inject(SessionStore);
   private clock = inject(Clock);
 
   private readonly id = Number(this.route.snapshot.paramMap.get('id'));
+  /** Set per route in sessions.routes.ts, so Past Sessions can send the user back to itself. */
+  protected readonly backLink =
+    (this.route.snapshot.data['backLink'] as string | undefined) ?? '/sessions';
 
-  protected readonly role = computed(() => this.auth.currentUser().role);
+  protected readonly role = computed(() => this.auth.user().role);
   protected readonly session = computed(() => this.store.get(this.id));
   protected readonly review = computed(() => this.store.reviewFor(this.id));
   protected readonly notice = signal<string | null>(null);

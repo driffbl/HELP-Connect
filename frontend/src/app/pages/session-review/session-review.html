@@ -4,6 +4,9 @@
       <h2>Thank you for your feedback</h2>
       <p>Your review has been saved.</p>
       <a class="btn" routerLink="/sessions" data-testid="back-to-sessions">Back to My Sessions</a>
+      <a class="btn" routerLink="/past-sessions" data-testid="view-past-sessions"
+        >View Past Sessions</a
+      >
     </section>
   } @else if (session(); as s) {
     @if (blockedReason(); as reason) {

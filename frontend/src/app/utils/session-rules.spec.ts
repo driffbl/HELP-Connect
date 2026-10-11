@@ -7,6 +7,8 @@ import {
   canGiveFeedback,
   effectiveStatus,
   isExpiredPending,
+  isInMySessions,
+  isPast,
 } from './session-rules';
 
 function makeSession(overrides: Partial<Session> = {}): Session {
@@ -110,6 +112,36 @@ describe('session rules', () => {
     });
     it('blocks the volunteer from reviewing', () => {
       expect(canGiveFeedback(done, 'volunteer', false)).toBe(false);
+    });
+  });
+  describe('which list a session belongs to', () => {
+    it('treats Completed and Cancelled as past', () => {
+      expect(isPast(makeSession({ status: 'Completed' }), atStart)).toBe(true);
+      expect(isPast(makeSession({ status: 'Cancelled' }), atStart)).toBe(true);
+    });
+    it('treats an expired Pending session as past because it shows as Cancelled', () => {
+      const pending = makeSession({ status: 'Pending', proposedBy: 'student' });
+      expect(isPast(pending, beforeStart)).toBe(false);
+      expect(isPast(pending, atStart)).toBe(true);
+    });
+    it('does not treat Pending or Scheduled as past', () => {
+      expect(isPast(makeSession({ status: 'Scheduled' }), atStart)).toBe(false);
+    });
+    it('keeps a Completed session in My Sessions only until feedback is given', () => {
+      const done = makeSession({ status: 'Completed' });
+      expect(isInMySessions(done, false, atStart)).toBe(true);
+      expect(isInMySessions(done, true, atStart)).toBe(false);
+    });
+    it('keeps Cancelled, Pending and Scheduled sessions in My Sessions', () => {
+      expect(isInMySessions(makeSession({ status: 'Cancelled' }), false, atStart)).toBe(true);
+      expect(isInMySessions(makeSession({ status: 'Scheduled' }), false, atStart)).toBe(true);
+      expect(
+        isInMySessions(
+          makeSession({ status: 'Pending', proposedBy: 'student' }),
+          false,
+          beforeStart,
+        ),
+      ).toBe(true);
     });
   });
 });

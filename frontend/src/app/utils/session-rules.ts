@@ -47,3 +47,17 @@ export function canComplete(s: Session, role: UserRole, now: Date = new Date()):
 export function canGiveFeedback(s: Session, role: UserRole, alreadyReviewed: boolean): boolean {
   return role === 'student' && s.status === 'Completed' && !alreadyReviewed;
 }
+
+/** Completed sessions and Cancelled ones (including Pending that expired) are "past". */
+export function isPast(s: Session, now: Date = new Date()): boolean {
+  const status = effectiveStatus(s, now);
+  return status === 'Completed' || status === 'Cancelled';
+}
+
+/**
+ * My Sessions shows everything except a Completed session that already has feedback.
+ * A Completed session stays until the student leaves feedback, then moves to Past Sessions only.
+ */
+export function isInMySessions(s: Session, hasFeedback: boolean, now: Date = new Date()): boolean {
+  return !(effectiveStatus(s, now) === 'Completed' && hasFeedback);
+}

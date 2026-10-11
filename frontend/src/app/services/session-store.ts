@@ -1,19 +1,25 @@
 import { Service, computed, inject, signal } from '@angular/core';
-import { Review, Session } from '../models/session.model';
+import { Review, Session, SessionStatus } from '../models/session.model';
 import {
   canCancel,
   canComplete,
   canConfirm,
   canDecline,
   canGiveFeedback,
+  effectiveStatus,
+  isInMySessions,
+  isPast,
+  sessionStart,
 } from '../utils/session-rules';
-import { MockAuth } from './mock-auth';
+import { Clock } from './clock';
+import { CurrentUser } from './current-user';
 
 export type ReviewResult = { ok: true } | { ok: false; error: string };
 
-/** A completed session plus the review the student left, if any. */
+/** A past (Completed or Cancelled) session, its status as it should be shown, and the review if any. */
 export interface HistoryRow {
   session: Session;
+  status: SessionStatus;
   review: Review | null;
 }
 
@@ -156,33 +162,52 @@ function seedReviews(): Review[] {
 
 @Service()
 export class SessionStore {
-  private auth = inject(MockAuth);
+  private auth = inject(CurrentUser);
+  private clock = inject(Clock);
   private all = signal<Session[]>(seedSessions());
   private reviews = signal<Review[]>(seedReviews());
 
   /** Sessions belonging to the current user in their current role, newest first. */
   readonly mySessions = computed(() => {
-    const u = this.auth.currentUser();
+    const u = this.auth.user();
     return this.all()
       .filter((s) => (u.role === 'student' ? s.studentId === u.id : s.volunteerId === u.id))
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   });
 
-  /** Volunteer view: every completed session with its review (or null). */
-  readonly volunteerHistory = computed<HistoryRow[]>(() => {
-    if (this.auth.currentUser().role !== 'volunteer') return [];
-    return this.mySessions()
-      .filter((s) => s.status === 'Completed')
-      .map((s) => ({ session: s, review: this.reviewFor(s.id) ?? null }));
+  /** My Sessions: everything except Completed sessions that already have feedback. */
+  readonly activeSessions = computed(() => {
+    const now = this.clock.now();
+    return this.mySessions().filter((s) =>
+      isInMySessions(s, this.reviewFor(s.id) !== undefined, now),
+    );
   });
 
-  readonly reviewCount = computed(
-    () => this.volunteerHistory().filter((r) => r.review !== null).length,
+  /**
+   * Past Sessions: Completed and Cancelled sessions of the current user (either role),
+   * most recent first, each with the review the student left (or null).
+   */
+  readonly pastSessions = computed<HistoryRow[]>(() => {
+    const now = this.clock.now();
+    return this.mySessions()
+      .filter((s) => isPast(s, now))
+      .sort((a, b) => sessionStart(b).getTime() - sessionStart(a).getTime())
+      .map((s) => ({
+        session: s,
+        status: effectiveStatus(s, now),
+        review: this.reviewFor(s.id) ?? null,
+      }));
+  });
+
+  /** Reviews the current volunteer has received. Always 0 for a student. */
+  readonly reviewCount = computed(() =>
+    this.role() === 'volunteer' ? this.pastSessions().filter((r) => r.review !== null).length : 0,
   );
 
-  /** Average of the ratings received, or null when there are none. */
+  /** The current volunteer's average rating, or null when there are none (always null for a student). */
   readonly averageRating = computed<number | null>(() => {
-    const ratings = this.volunteerHistory().flatMap((r) => (r.review ? [r.review.rating] : []));
+    if (this.role() !== 'volunteer') return null;
+    const ratings = this.pastSessions().flatMap((r) => (r.review ? [r.review.rating] : []));
     return ratings.length === 0 ? null : ratings.reduce((sum, n) => sum + n, 0) / ratings.length;
   });
 
@@ -241,7 +266,7 @@ export class SessionStore {
   }
 
   private role() {
-    return this.auth.currentUser().role;
+    return this.auth.user().role;
   }
 
   private patch(id: number, changes: Partial<Session>): void {

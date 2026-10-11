@@ -3,7 +3,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ConfirmModal } from '../../components/confirm-modal/confirm-modal';
 import { Panel } from '../../components/panel/panel';
 import { StarRating } from '../../components/star-rating/star-rating';
-import { MockAuth } from '../../services/mock-auth';
+import { CurrentUser } from '../../services/current-user';
 import { SessionStore } from '../../services/session-store';
 import { formatDay } from '../../utils/session-format';
 
@@ -15,7 +15,7 @@ import { formatDay } from '../../utils/session-format';
 })
 export class SessionReview {
   private route = inject(ActivatedRoute);
-  private auth = inject(MockAuth);
+  private auth = inject(CurrentUser);
   private store = inject(SessionStore);
 
   protected readonly id = Number(this.route.snapshot.paramMap.get('id'));
@@ -36,7 +36,7 @@ export class SessionReview {
   protected readonly blockedReason = computed(() => {
     const s = this.session();
     if (!s) return null;
-    if (this.auth.currentUser().role !== 'student')
+    if (this.auth.user().role !== 'student')
       return 'Only the student who took part can leave feedback.';
     if (s.status !== 'Completed')
       return 'Feedback opens once the volunteer marks the session as completed.';
