@@ -6,7 +6,7 @@ import { Component, input, output } from '@angular/core';
   host: { '(document:keydown.escape)': 'dismissed.emit()' },
   template: `
     <div class="backdrop" data-testid="modal-backdrop">
-      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="modal-title">
         <h3 id="modal-title">{{ title() }}</h3>
         <p>{{ message() }}</p>
         <div class="buttons">
@@ -38,7 +38,7 @@ import { Component, input, output } from '@angular/core';
         align-items: center;
         justify-content: center;
       }
-      .modal {
+      .dialog {
         background: #fff;
         border-radius: 8px;
         padding: 24px;

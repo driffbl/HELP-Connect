@@ -53,7 +53,7 @@ export class SessionDetail {
   });
   protected readonly canCancel = computed(() => {
     const s = this.session();
-    return !!s && rules.canCancel(s, this.clock.now());
+    return !!s && rules.canCancel(s, this.role(), this.clock.now());
   });
   /** The Mark as Complete button is shown to the volunteer on Scheduled sessions... */
   protected readonly showComplete = computed(() => {

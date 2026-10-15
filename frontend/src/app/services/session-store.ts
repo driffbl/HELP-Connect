@@ -232,7 +232,7 @@ export class SessionStore {
 
   cancel(id: number): void {
     const s = this.get(id);
-    if (s && canCancel(s)) this.patch(id, { status: 'Cancelled' });
+    if (s && canCancel(s, this.role())) this.patch(id, { status: 'Cancelled' });
   }
 
   complete(id: number): void {

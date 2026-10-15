@@ -29,9 +29,14 @@ export function canDecline(s: Session, role: UserRole, now: Date = new Date()): 
   return canConfirm(s, role, now);
 }
 
-/** Cancel anytime until the session is finished or already cancelled. */
-export function canCancel(s: Session, now: Date = new Date()): boolean {
-  return (s.status === 'Pending' && !isExpiredPending(s, now)) || s.status === 'Scheduled';
+/**
+ * Scheduled: either side can cancel.
+ * Pending: only the party who made the request can cancel it (the other party accepts or declines instead).
+ * Completed, Cancelled and expired Pending sessions cannot be cancelled.
+ */
+export function canCancel(s: Session, role: UserRole, now: Date = new Date()): boolean {
+  if (s.status === 'Scheduled') return true;
+  return s.status === 'Pending' && !isExpiredPending(s, now) && s.proposedBy === role;
 }
 
 export function canReschedule(s: Session): boolean {

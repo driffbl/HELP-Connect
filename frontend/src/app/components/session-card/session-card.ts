@@ -10,7 +10,7 @@ import { StatusBadge } from '../status-badge/status-badge';
   selector: 'app-session-card',
   imports: [StatusBadge],
   template: `
-    <article class="card">
+    <article class="request-card">
       <div class="top">
         <span>{{ ref() }}</span
         ><span>#{{ category() }}</span>
@@ -32,7 +32,7 @@ import { StatusBadge } from '../status-badge/status-badge';
   `,
   styles: [
     `
-      .card {
+      .request-card {
         margin-bottom: 16px;
         overflow: hidden;
         background: #fff;

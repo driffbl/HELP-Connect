@@ -3,8 +3,10 @@
     <section class="done" data-testid="review-success">
       <h2>Thank you for your feedback</h2>
       <p>Your review has been saved.</p>
-      <a class="btn" routerLink="/sessions" data-testid="back-to-sessions">Back to My Sessions</a>
-      <a class="btn" routerLink="/past-sessions" data-testid="view-past-sessions"
+      <a class="action-btn" routerLink="/sessions" data-testid="back-to-sessions"
+        >Back to My Sessions</a
+      >
+      <a class="action-btn" routerLink="/past-sessions" data-testid="view-past-sessions"
         >View Past Sessions</a
       >
     </section>
@@ -30,7 +32,7 @@
         ></textarea>
         <small class="count">{{ comment().length }}/{{ maxComment }}</small>
 
-        <button type="button" class="btn" data-testid="submit-review" (click)="submit()">
+        <button type="button" class="action-btn" data-testid="submit-review" (click)="submit()">
           Submit review
         </button>
       </section>

@@ -72,18 +72,29 @@ describe('session rules', () => {
   });
 
   describe('cancelling', () => {
-    it('allows Scheduled and live Pending sessions', () => {
-      expect(canCancel(makeSession({ status: 'Scheduled' }), atStart)).toBe(true);
-      expect(
-        canCancel(makeSession({ status: 'Pending', proposedBy: 'student' }), beforeStart),
-      ).toBe(true);
+    const pending = makeSession({ status: 'Pending', proposedBy: 'student' });
+
+    it('lets either side cancel a Scheduled session', () => {
+      expect(canCancel(makeSession({ status: 'Scheduled' }), 'student', atStart)).toBe(true);
+      expect(canCancel(makeSession({ status: 'Scheduled' }), 'volunteer', atStart)).toBe(true);
     });
-    it('blocks expired Pending, Completed and Cancelled sessions', () => {
-      expect(canCancel(makeSession({ status: 'Pending', proposedBy: 'student' }), atStart)).toBe(
-        false,
-      );
-      expect(canCancel(makeSession({ status: 'Completed' }), atStart)).toBe(false);
-      expect(canCancel(makeSession({ status: 'Cancelled' }), atStart)).toBe(false);
+    it('lets the student cancel their own Pending request', () => {
+      expect(canCancel(pending, 'student', beforeStart)).toBe(true);
+    });
+    it('does not let the volunteer cancel a Pending request, they accept or decline it', () => {
+      expect(canCancel(pending, 'volunteer', beforeStart)).toBe(false);
+      expect(canDecline(pending, 'volunteer', beforeStart)).toBe(true);
+    });
+    it('lets only the proposer cancel a Pending proposal, whichever side proposed it', () => {
+      const proposedByVolunteer = makeSession({ status: 'Pending', proposedBy: 'volunteer' });
+      expect(canCancel(proposedByVolunteer, 'volunteer', beforeStart)).toBe(true);
+      expect(canCancel(proposedByVolunteer, 'student', beforeStart)).toBe(false);
+    });
+    it('blocks expired Pending, Completed and Cancelled sessions for everyone', () => {
+      expect(canCancel(pending, 'student', atStart)).toBe(false);
+      expect(canCancel(makeSession({ status: 'Completed' }), 'student', atStart)).toBe(false);
+      expect(canCancel(makeSession({ status: 'Completed' }), 'volunteer', atStart)).toBe(false);
+      expect(canCancel(makeSession({ status: 'Cancelled' }), 'student', atStart)).toBe(false);
     });
   });
 

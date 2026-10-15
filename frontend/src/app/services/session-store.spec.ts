@@ -80,6 +80,20 @@ describe('SessionStore', () => {
       store.cancel(2);
       expect(store.get(2)?.status).toBe('Cancelled');
     });
+    it('lets the student cancel their own Pending request', () => {
+      store.cancel(1);
+      expect(store.get(1)?.status).toBe('Cancelled');
+    });
+    it('does not let the volunteer cancel a Pending request', () => {
+      me.setRole('volunteer');
+      store.cancel(1);
+      expect(store.get(1)?.status).toBe('Pending');
+    });
+    it('lets the volunteer decline a Pending request, which cancels it', () => {
+      me.setRole('volunteer');
+      store.decline(1);
+      expect(store.get(1)?.status).toBe('Cancelled');
+    });
     it('does not cancel a Completed session', () => {
       store.cancel(4);
       expect(store.get(4)?.status).toBe('Completed');

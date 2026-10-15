@@ -21,15 +21,17 @@
 
       <div class="actions">
         @if (canConfirm()) {
-          <button type="button" class="btn" data-testid="accept" (click)="accept()">Accept</button>
-          <button type="button" class="btn" data-testid="decline" (click)="ask('decline')">
+          <button type="button" class="action-btn" data-testid="accept" (click)="accept()">
+            Accept
+          </button>
+          <button type="button" class="action-btn" data-testid="decline" (click)="ask('decline')">
             Decline
           </button>
         }
         @if (showComplete()) {
           <button
             type="button"
-            class="btn"
+            class="action-btn"
             data-testid="complete"
             [disabled]="!canComplete()"
             (click)="complete()"
@@ -44,14 +46,14 @@
         }
         @if (canReview()) {
           <a
-            class="btn"
+            class="action-btn"
             [routerLink]="['/sessions', v.session.id, 'review']"
             data-testid="rate-volunteer"
             >Rate volunteer</a
           >
         }
         @if (canCancel()) {
-          <button type="button" class="btn" data-testid="cancel" (click)="ask('cancel')">
+          <button type="button" class="action-btn" data-testid="cancel" (click)="ask('cancel')">
             Cancel
           </button>
         }
