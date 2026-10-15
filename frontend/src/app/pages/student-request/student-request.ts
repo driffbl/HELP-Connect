@@ -1,10 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+import { MatchingService } from '../../services/matching.service';
 
-export interface StudentRequest {
-  request_id: string;
+export interface StudentRequestItem {
+  request_id: number | string;
   title: string;
   category: string;
+  description: string;
   volunteer_name: string;
   created_at: string;
   support_mode: string;
@@ -19,85 +22,77 @@ export interface StudentRequest {
   styleUrls: ['./student-request.css'],
 })
 export class StudentRequests implements OnInit {
-  requests: StudentRequest[] = [];
+  requests: StudentRequestItem[] = [];
+  isLoading: boolean = false;
+  studentId: number = 1; // Current test student ID
+  currentSystemDate: Date = new Date(); // Compares against current time
 
-  // Hardcoded to match the contextual current date (October 11, 2026) for accurate 3-day testing
-  currentSystemDate = new Date('2026-10-11T00:00:00');
+  constructor(
+    private matchingService: MatchingService,
+    private router: Router,
+    private cdr: ChangeDetectorRef,
+  ) {}
 
   ngOnInit(): void {
     this.loadStudentRequests();
   }
 
   loadStudentRequests(): void {
-    // Simulating database fetch from SupportRequest table[cite: 14]
-    this.requests = [
-      {
-        request_id: 'R4569',
-        title: 'Python Tutoring',
-        category: 'Academic Support',
-        volunteer_name: 'Alex Tan',
-        created_at: '2026-10-10T10:00:00', // Only 1 day ago (Will NOT show Change Volunteer)
-        support_mode: 'Virtual',
-        status: 'Pending',
+    this.isLoading = true;
+    this.matchingService.getStudentRequests(this.studentId).subscribe({
+      next: (data: any[]) => {
+        // Map database attributes so req.title and other template bindings are satisfied
+        this.requests = data.map((item) => ({
+          request_id: item.request_id || item.Request_id,
+          title: item.category || item.Category_name || 'Support Request',
+          category: item.category || item.Category_name,
+          description: item.description || item.Description,
+          volunteer_name: item.volunteer_name || item.Volunteer_name || 'Unassigned',
+          created_at: item.created_at || new Date().toISOString(),
+          support_mode: item.support_mode || item.Support_mode,
+          status: item.status || item.Request_status || 'Pending',
+        }));
+        this.isLoading = false;
+        this.cdr.detectChanges();
       },
-      {
-        request_id: 'R4570',
-        title: 'Discrete Math Help',
-        category: 'Academic Support',
-        volunteer_name: 'Sarah Lee',
-        created_at: '2026-10-05T09:00:00', // 6 days ago (WILL show Change Volunteer)[cite: 9]
-        support_mode: 'Face-to-Face',
-        status: 'Pending',
+      error: (err) => {
+        console.error('Error loading student requests:', err);
+        this.isLoading = false;
+        this.cdr.detectChanges();
       },
-      {
-        request_id: 'R4557',
-        title: 'Cloud Computing Tutoring',
-        category: 'Technology Support',
-        volunteer_name: 'Marcus Wong',
-        created_at: '2026-10-01T14:30:00',
-        support_mode: 'Virtual',
-        status: 'Accepted',
-      },
-      {
-        request_id: 'R4545',
-        title: 'Python Debugging',
-        category: 'Academic Support',
-        volunteer_name: 'John Doe',
-        created_at: '2026-09-21T11:15:00',
-        support_mode: 'Virtual',
-        status: 'Cancelled',
-      },
-    ];
+    });
   }
 
-  // Evaluates if a request is stuck in 'Pending' for over 3 days[cite: 9, 10]
-  isStalePending(request: StudentRequest): boolean {
-    if (request.status !== 'Pending') {
+  // Resolves: Property 'formatDate' does not exist on type 'StudentRequests'
+  formatDate(dateString: string): string {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+  }
+
+  // Resolves: Property 'isStalePending' does not exist on type 'StudentRequests'
+  isStalePending(req: StudentRequestItem): boolean {
+    if (req.status !== 'Pending') {
       return false;
     }
-
-    const createdDate = new Date(request.created_at);
-
-    const diffTime = this.currentSystemDate.getTime() - createdDate.getTime();
-
-    const diffDays = diffTime / (1000 * 60 * 60 * 24);
-
-    return diffDays > 3;
+    const createdDate = new Date(req.created_at);
+    const diffTime = Math.abs(this.currentSystemDate.getTime() - createdDate.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays > 3; // True if pending for more than 3 days
   }
 
-  onChangeVolunteer(request: StudentRequest): void {
-    alert(
-      `Initiating volunteer re-selection for Request ${request.request_id}. Redirecting to matching pool...`,
-    );
-    // Here you would navigate back to the matching-results component with the request details[cite: 9]
+  // Alternative Flow 6a: Re-select volunteer
+  onChangeVolunteer(req: StudentRequestItem): void {
+    this.router.navigate(['/matching-results'], {
+      queryParams: {
+        category: req.category,
+        mode: req.support_mode,
+        requestId: req.request_id,
+      },
+    });
   }
 
   onGoBack(): void {
     window.history.back();
-  }
-
-  formatDate(dateString: string): string {
-    const date = new Date(dateString);
-    return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
   }
 }

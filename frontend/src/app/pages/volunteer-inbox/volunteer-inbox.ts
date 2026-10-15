@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { MatchingService } from '../../services/matching.service';
 
 export interface IncomingRequest {
-  request_id: string;
+  request_id: number | string;
   title: string;
   category: string;
   description: string;
@@ -21,56 +22,68 @@ export interface IncomingRequest {
   styleUrls: ['./volunteer-inbox.css'],
 })
 export class VolunteerInbox implements OnInit {
-  incomingRequests: IncomingRequest[] = [];
+  pendingRequests: IncomingRequest[] = [];
+  isLoading: boolean = false;
+  volunteerId: number = 1;
+
+  constructor(
+    private matchingService: MatchingService,
+    private cdr: ChangeDetectorRef,
+  ) {}
 
   ngOnInit(): void {
     this.loadIncomingRequests();
   }
 
   loadIncomingRequests(): void {
-    // Mock data based on the provided wireframe structure
-    this.incomingRequests = [
-      {
-        request_id: 'R4583',
-        title: 'Help with Docker',
-        category: 'Technology Support',
-        description:
-          'Need help writing a Dockerfile for a Node.js microservice and debugging container port mapping errors on Windows.',
-        student_name: 'Sarah Lee',
-        date: '16 October 2026',
-        time: '2:00 PM - 4:00 PM',
-        support_mode: 'Face-to-Face',
-        status: 'Pending',
+    this.isLoading = true;
+    this.matchingService.getVolunteerIncoming(this.volunteerId).subscribe({
+      next: (data: any[]) => {
+        // Map database fields to the properties expected by volunteer-inbox.html
+        this.pendingRequests = data.map((item) => ({
+          request_id: item.request_id || item.Request_id,
+          title: item.category || 'Support Request',
+          category: item.category || item.Category_name,
+          description: item.description || item.Description,
+          student_name: item.student_name || item.Student_name || 'Student',
+          date: item.preferred_date || item.Preferred_date,
+          time: item.preferred_time || item.Preferred_time,
+          support_mode: item.support_mode || item.Support_mode,
+          status: item.status || item.Request_status || 'Pending',
+        }));
+        this.isLoading = false;
+        this.cdr.detectChanges();
       },
-      {
-        request_id: 'R4584',
-        title: 'Python Assignment Debugging',
-        category: 'Academic Support',
-        description: 'Stuck with recursive tree traversal and dictionary data structures for my BIT216 assignment submission.',
-        student_name: 'Ali',
-        date: '17 October 2026',
-        time: '10:00 AM - 11:30 AM',
-        support_mode: 'Virtual',
-        status: 'Pending',
+      error: (err) => {
+        console.error('Error loading inbox:', err);
+        this.isLoading = false;
+        this.cdr.detectChanges();
       },
-    ];
+    });
   }
 
-  // Gets only the requests that haven't been acted upon yet
-  get pendingRequests(): IncomingRequest[] {
-    return this.incomingRequests.filter((req) => req.status === 'Pending');
+  onAcceptRequest(req: IncomingRequest): void {
+    const id = Number(req.request_id);
+    this.matchingService.updateStatus(id, 'Accepted').subscribe({
+      next: () => {
+        alert(`Request #${id} accepted!`);
+        this.pendingRequests = this.pendingRequests.filter((r) => r.request_id !== req.request_id);
+        this.cdr.detectChanges();
+      },
+      error: () => alert('Failed to accept request.'),
+    });
   }
 
-  onAcceptRequest(request: IncomingRequest): void {
-    // In production, this makes a PATCH request to the backend
-    request.status = 'Accepted';
-    alert(`Request ${request.request_id} has been Accepted. The student will be notified.`);
-  }
-
-  onRejectRequest(request: IncomingRequest): void {
-    // In production, this makes a PATCH request to the backend
-    request.status = 'Rejected';
-    alert(`Request ${request.request_id} has been Rejected. The student will be notified.`);
+  onRejectRequest(req: IncomingRequest): void {
+    const id = Number(req.request_id);
+    this.matchingService.updateStatus(id, 'Rejected').subscribe({
+      next: () => {
+        alert(`Request #${id} rejected.`);
+        this.pendingRequests = this.pendingRequests.filter((r) => r.request_id !== req.request_id);
+        this.cdr.detectChanges();
+      },
+      error: () => alert('Failed to reject request.'),
+    });
   }
 
   onGoBack(): void {

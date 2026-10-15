@@ -228,10 +228,28 @@
 }
 
 .meta-text {
-  margin: 4px 0;
-
+  font-size: 0.82rem;
   color: #6b7280;
-  font-size: 0.8rem;
+  margin: 4px 0;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.meta-text strong {
+  color: #2b3a4a;
+  font-weight: 700;
+}
+
+.available-schedule {
+  min-height: 38px;
+}
+
+.mode-text {
+  margin-bottom: 4px;
+}
+.category-text {
+  min-height: 36px;
+  margin-bottom: 10px;
 }
 
 .rating-row {
