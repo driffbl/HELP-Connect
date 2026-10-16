@@ -1,7 +1,11 @@
-<div class="container">
+<app-header></app-header>
+
+<div class="page-container">
   <h1>Sign In</h1>
 
-  <div class="error" *ngIf="error">{{ error }}</div>
+  <div class="error" *ngIf="error">
+    ⚠️ {{ error }}
+  </div>
 
   <form (ngSubmit)="onSubmit()">
     <label>Email</label>
@@ -9,6 +13,7 @@
       type="email"
       name="email"
       [(ngModel)]="form.email"
+      (input)="clearError()"
       placeholder="you@help.edu.my"
       required
     />
@@ -18,11 +23,12 @@
       type="password"
       name="password"
       [(ngModel)]="form.password"
+      (input)="clearError()"
       placeholder="Your password"
       required
     />
 
-    <button type="submit" [disabled]="loading">
+    <button type="submit" class="btn-primary" [disabled]="loading">
       {{ loading ? 'Signing in...' : 'Sign In' }}
     </button>
   </form>

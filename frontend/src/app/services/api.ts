@@ -10,6 +10,7 @@ export class Api {
 
   constructor(private http: HttpClient) {}
 
+  // ─── Auth ───
   register(data: { name: string; email: string; password: string }): Observable<any> {
     return this.http.post(`${this.baseUrl}/auth/register`, data);
   }
@@ -26,11 +27,30 @@ export class Api {
     return this.http.post(`${this.baseUrl}/auth/login-verify`, data);
   }
 
+  // ─── Profile ───
   getProfile(): Observable<any> {
     return this.http.get(`${this.baseUrl}/profile/me`);
   }
 
   updateProfile(data: { name: string }): Observable<any> {
     return this.http.put(`${this.baseUrl}/profile/me`, data);
+  }
+
+  // ─── Volunteer ───
+  listCategories(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/volunteer/categories`);
+  }
+
+  registerVolunteer(data: {
+    availability: string;
+    preferred_mode: string;
+    bio?: string;
+    category_ids: number[];
+  }): Observable<any> {
+    return this.http.post(`${this.baseUrl}/volunteer/register`, data);
+  }
+
+  getVolunteerProfile(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/volunteer/me`);
   }
 }

@@ -7,90 +7,137 @@
 
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: #fff;
+  background: #fafafa;
   color: #333;
 }
 
-.container {
+/* ─── PAGE CONTAINER ─── */
+.page-container {
   max-width: 480px;
-  margin: 40px auto;
-  padding: 30px;
+  margin: 60px auto;
+  padding: 40px 32px;
+  background: white;
   border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
 }
 
+/* ─── HEADINGS ─── */
 h1, h2 {
   color: #e63946;
   margin-bottom: 20px;
   text-align: center;
 }
 
+/* ─── LABELS ─── */
 label {
   display: block;
   margin-bottom: 6px;
-  font-weight: 500;
-  color: #555;
-}
-
-input {
-  width: 100%;
-  padding: 10px 12px;
-  margin-bottom: 16px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  font-weight: 600;
   font-size: 14px;
+  color: #333;
 }
 
-input:focus {
+/* ─── INPUTS, SELECTS, TEXTAREAS ─── */
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 11px 14px;
+  margin-bottom: 18px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  transition: border-color 0.2s;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
   outline: none;
   border-color: #e63946;
+  box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.1);
 }
 
+/* ─── TEXTAREA (BIGGER) ─── */
+textarea {
+  resize: vertical;
+  min-height: 100px;
+  line-height: 1.5;
+}
+
+/* ─── BUTTONS ─── */
 button {
+  font-family: inherit;
+}
+
+.btn-primary {
   width: 100%;
-  padding: 12px;
+  padding: 13px;
   background: #e63946;
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.2s;
 }
 
-button:hover {
+.btn-primary:hover {
   background: #c32e3a;
 }
 
-button:disabled {
+.btn-primary:disabled {
   background: #ccc;
   cursor: not-allowed;
 }
 
+.btn-outline {
+  width: 100%;
+  padding: 13px;
+  background: white;
+  color: #e63946;
+  border: 2px solid #e63946;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-outline:hover {
+  background: #fff5f5;
+}
+
+/* ─── ALERTS ─── */
 .error {
   color: #d32f2f;
   background: #ffebee;
-  padding: 10px;
-  border-radius: 4px;
-  margin-bottom: 16px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
   font-size: 14px;
+  border-left: 4px solid #d32f2f;
 }
 
 .success {
   color: #2e7d32;
   background: #e8f5e9;
-  padding: 10px;
-  border-radius: 4px;
-  margin-bottom: 16px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
   font-size: 14px;
+  border-left: 4px solid #2e7d32;
 }
 
+/* ─── LINKS ─── */
 .link {
   text-align: center;
-  margin-top: 16px;
+  margin-top: 20px;
   font-size: 14px;
+  color: #666;
 }
 
 .link a {

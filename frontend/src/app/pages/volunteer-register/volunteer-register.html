@@ -1,0 +1,60 @@
+<app-header></app-header>
+
+<div class="page-container" style="max-width: 620px;">
+  <h1>Volunteer Registration</h1>
+
+  <div class="error" *ngIf="error()">⚠️ {{ error() }}</div>
+
+  <form (ngSubmit)="onSubmit()">
+    <label>Weekly Availability</label>
+    <input
+      type="text"
+      name="availability"
+      [(ngModel)]="form.availability"
+      placeholder="e.g. Mon/Wed 14:00-16:00"
+      required
+    />
+
+    <label>Preferred Support Mode</label>
+    <select name="preferred_mode" [(ngModel)]="form.preferred_mode">
+      <option value="Virtual">Virtual</option>
+      <option value="Face-to-Face">Face-to-Face</option>
+      <option value="Both">Both</option>
+    </select>
+
+    <label>Short Bio (Optional)</label>
+    <textarea
+      name="bio"
+      [(ngModel)]="form.bio"
+      rows="4"
+      placeholder="Tell students about yourself..."
+    ></textarea>
+
+    <label>Support Categories</label>
+    <p style="font-size: 13px; color: #888; margin-bottom: 10px;">
+      Select the categories you're confident in helping with.
+    </p>
+
+    <!-- Loading state -->
+    <div *ngIf="categories().length === 0" style="text-align: center; color: #888; padding: 20px;">
+      Loading categories...
+    </div>
+
+    <!-- Category chips -->
+    <div class="category-list" *ngIf="categories().length > 0">
+      <button
+        type="button"
+        *ngFor="let cat of categories()"
+        class="category-chip"
+        [class.selected]="isSelected(cat.Category_id)"
+        (click)="toggleCategory(cat.Category_id)"
+      >
+        #{{ cat.Category_name }}
+      </button>
+    </div>
+
+    <button type="submit" class="btn-primary" [disabled]="loading()" style="margin-top: 24px;">
+      {{ loading() ? 'Registering...' : 'Confirm' }}
+    </button>
+  </form>
+</div>

@@ -3,10 +3,10 @@ const router = express.Router();
 const volunteerController = require('../controllers/volunteerController');
 const authMiddleware = require('../middleware/authMiddleware');
 
-// Public
+// Public — no auth required
 router.get('/categories', volunteerController.listCategories);
 
-// Protected
+// Protected — requires JWT
 router.post('/register', authMiddleware, volunteerController.register);
 router.get('/me', authMiddleware, volunteerController.getProfile);
 
