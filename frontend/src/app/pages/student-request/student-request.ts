@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { MatchingService } from '../../services/matching.service';
+import { Header } from '../../components/header/header';
 
 export interface StudentRequestItem {
   request_id: number | string;
@@ -18,7 +19,7 @@ export interface StudentRequestItem {
 @Component({
   selector: 'app-student-requests',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, Header],
   templateUrl: './student-request.html',
   styleUrls: ['./student-request.css'],
 })

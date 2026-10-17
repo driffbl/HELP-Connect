@@ -4,84 +4,68 @@
   color: #333333;
   background-color: #f7f9fa;
   min-height: 100vh;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-/* Header */
-.app-header {
-  background-color: #ff4d4d;
-  color: #ffffff;
-  height: 56px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 24px;
+/* Page Frame: Centers content without squeezing inner grids */
+.uc2-page-container {
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 
-.brand-title {
-  font-size: 1.25rem;
-  font-weight: 700;
-  letter-spacing: -0.2px;
-}
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.icon-btn {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  display: flex;
-  align-items: center;
-}
-
-.header-icon {
-  width: 26px;
-  height: 26px;
-  fill: #ffffff;
-}
-
-/* Main Outer Container */
 .main-content {
-  padding: 24px 20px;
+  width: 100%;
   display: flex;
   justify-content: center;
+  padding: 32px 20px 48px;
+  box-sizing: border-box;
 }
 
+/* Form Card */
 .form-card {
   width: 100%;
   max-width: 900px;
   background: #ffffff;
   border: 1.5px solid #ff4d4d;
   border-radius: 8px;
-  padding: 24px 32px 32px;
+  padding: 28px 36px 36px;
   box-sizing: border-box;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
 }
 
-/* Card Header */
+/* Header & Back Button Alignment */
 .card-header {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 24px;
+  width: 100%;
 }
 
 .btn-back {
   position: absolute;
   left: 0;
-  background: transparent;
-  border: none;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent !important;
+  border: none !important;
   color: #ff4d4d;
-  font-weight: 500;
+  font-weight: 600;
   font-size: 0.95rem;
   cursor: pointer;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 6px;
+  padding: 0 !important;
+  width: auto !important;
+  box-shadow: none !important;
+}
+
+.btn-back:hover {
+  text-decoration: underline;
 }
 
 .page-title {
@@ -91,30 +75,34 @@
   margin: 0;
 }
 
-/* Form Two-Column Grid */
+/* Fixed left calendar width prevents right inputs from causing layout shifts */
 .request-layout {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 340px 1fr;
   column-gap: 40px;
   row-gap: 24px;
+  align-items: start;
 }
 
-/* Calendar Card */
+/* Section Labels */
 .section-label {
   display: block;
   color: #ff4d4d;
   font-weight: 600;
   font-size: 0.95rem;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
+/* Calendar Card */
 .calendar-card {
   background: #ffffff;
   border-radius: 12px;
   box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
   border: 1px solid #eef0f2;
   padding: 16px;
-  max-width: 320px;
+  width: 100%;
+  max-width: 340px;
+  box-sizing: border-box;
 }
 
 .cal-nav {
@@ -132,19 +120,18 @@
 
 .cal-arrows {
   display: flex;
-  flex-direction: row;
-  align-items: center;
   gap: 4px;
 }
 
 .cal-arrows button {
-  width: auto;
-  background: none;
-  border: none;
+  width: auto !important;
+  background: none !important;
+  border: none !important;
   color: #555;
   font-size: 1rem;
   cursor: pointer;
-  padding: 4px 8px;
+  padding: 4px 8px !important;
+  box-shadow: none !important;
 }
 
 .cal-grid {
@@ -162,15 +149,17 @@
 }
 
 .days button {
-  width: auto;
-  padding: 0;
-  background: none;
-  border: none;
-  height: 32px;
+  width: 32px !important;
+  height: 32px !important;
+  padding: 0 !important;
+  background: none !important;
+  border: none !important;
   font-size: 0.8rem;
-  border-radius: 50%;
+  border-radius: 50% !important;
   cursor: pointer;
   color: #2b3a4a;
+  box-shadow: none !important;
+  margin: 0 auto;
 }
 
 .days button.empty {
@@ -178,23 +167,23 @@
 }
 
 .days button:hover:not([disabled]) {
-  background-color: #f1f3f4;
+  background-color: #f1f3f4 !important;
 }
 
 .days button.selected {
-  background-color: #1e293b;
-  color: #ffffff;
+  background-color: #1e293b !important;
+  color: #ffffff !important;
   font-weight: bold;
 }
 
 .days button.today:not(.selected) {
-  border: 1px solid #ff4d4d;
+  border: 1px solid #ff4d4d !important;
   color: #ff4d4d;
 }
 
 .time-widget {
-  margin-top: 10px;
-  padding-top: 8px;
+  margin-top: 14px;
+  padding-top: 10px;
   border-top: 1px solid #edf0f2;
   display: flex;
   justify-content: space-between;
@@ -204,20 +193,25 @@
 }
 
 .time-input {
-  width: auto;
-  margin-bottom: 0;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  padding: 4px 8px;
+  width: auto !important;
+  margin-bottom: 0 !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 6px !important;
+  padding: 4px 8px !important;
   font-size: 0.85rem;
   background-color: #f8fafc;
 }
 
-/* Right-Hand Form Fields */
+/* Fields Section (Right Column) */
 .fields-section {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
+  width: 100%;
+}
+
+.input-group {
+  width: 100%;
 }
 
 .input-group label {
@@ -231,35 +225,43 @@
 
 .select-wrapper {
   position: relative;
+  width: 100%;
 }
 
-select, textarea {
-  width: 100%;
-  border: 1.5px solid #ff8080;
-  border-radius: 8px;
-  padding: 10px 14px;
-  font-size: 0.9rem;
-  box-sizing: border-box;
+/* Form Controls: Force width to override global rules from main */
+select,
+textarea {
+  width: 100% !important;
+  border: 1.5px solid #ff8080 !important;
+  border-radius: 8px !important;
+  padding: 10px 14px !important;
+  font-size: 0.9rem !important;
+  box-sizing: border-box !important;
   outline: none;
   background-color: #ffffff;
   color: #333333;
+  margin-bottom: 0 !important;
 }
 
 select {
   appearance: none;
   cursor: pointer;
-  background-image: url("data:image/svg2+xml;utf8,<svg fill='%23777' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
-  background-repeat: no-repeat;
-  background-position: right 10px center;
+  background-image: url("data:image/svg+xml;utf8,<svg fill='%23777' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 10px center !important;
 }
 
 textarea {
   resize: vertical;
+  min-height: 110px;
+  line-height: 1.4;
 }
 
-select:focus, textarea:focus, .time-input:focus {
-  border-color: #ff4d4d;
-  box-shadow: 0 0 0 2px rgba(255, 77, 77, 0.2);
+select:focus,
+textarea:focus,
+.time-input:focus {
+  border-color: #ff4d4d !important;
+  box-shadow: 0 0 0 2px rgba(255, 77, 77, 0.2) !important;
 }
 
 .invalid {
@@ -267,7 +269,7 @@ select:focus, textarea:focus, .time-input:focus {
   background-color: #fff8f8;
 }
 
-/* Form Actions Button */
+/* Actions */
 .form-actions {
   grid-column: 1 / -1;
   display: flex;
@@ -276,21 +278,21 @@ select:focus, textarea:focus, .time-input:focus {
 }
 
 .btn-confirm {
-  width: auto;
-  background-color: #ff4d4d;
-  color: #ffffff;
-  border: none;
-  border-radius: 8px;
-  padding: 12px 64px;
-  font-size: 1rem;
-  font-weight: 600;
+  width: auto !important;
+  background-color: #ff4d4d !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 12px 64px !important;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
   cursor: pointer;
-  box-shadow: 0 3px 8px rgba(255, 77, 77, 0.35);
+  box-shadow: 0 3px 8px rgba(255, 77, 77, 0.35) !important;
   transition: background-color 0.15s ease-in-out;
 }
 
 .btn-confirm:hover {
-  background-color: #e63939;
+  background-color: #e63939 !important;
 }
 
 .alert-banner {
@@ -304,3 +306,12 @@ select:focus, textarea:focus, .time-input:focus {
   text-align: center;
 }
 
+/* Responsive adjustment for small viewports */
+@media (max-width: 768px) {
+  .request-layout {
+    grid-template-columns: 1fr;
+  }
+  .calendar-card {
+    max-width: 100%;
+  }
+}

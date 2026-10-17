@@ -1,6 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatchingService } from '../../services/matching.service';
+import { Header } from '../../components/header/header';
 
 export interface IncomingRequest {
   request_id: number | string;
@@ -17,14 +18,14 @@ export interface IncomingRequest {
 @Component({
   selector: 'app-volunteer-inbox',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, Header],
   templateUrl: './volunteer-inbox.html',
   styleUrls: ['./volunteer-inbox.css'],
 })
 export class VolunteerInbox implements OnInit {
   pendingRequests: IncomingRequest[] = [];
   isLoading: boolean = false;
-  volunteerId: number = 16; // Current test volunteer ID
+  volunteerId: number = 10; // Current test volunteer ID
 
   // Default fallback avatar if student has no profile picture
   defaultAvatar: string =
@@ -49,11 +50,7 @@ export class VolunteerInbox implements OnInit {
           category: item.category || item.Category_name || 'Academic Support',
           description: item.description || item.Description || '',
           student_name: item.student_name || item.Student_name || 'Student',
-          student_avatar:
-            item.student_avatar ||
-            item.Student_avatar ||
-            item.profile_picture ||
-            this.defaultAvatar,
+          student_avatar: item.student_avatar || item.Student_avatar || this.defaultAvatar,
           date: item.preferred_date || item.Preferred_date || '',
           time: item.preferred_time || item.Preferred_time || '12:00',
           support_mode: item.support_mode || item.Support_mode || 'Virtual',

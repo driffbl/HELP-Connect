@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatchingService } from '../../services/matching.service';
 import { Volunteer } from '../../models/volunteer.model';
+import { Header } from '../../components/header/header';
 
 @Component({
   selector: 'app-matching-results',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, Header],
   templateUrl: './matching-results.html',
   styleUrls: ['./matching-results.css'],
 })

@@ -243,8 +243,7 @@ exports.getVolunteerInbox = async (req, res) => {
                 sr.Request_status,
                 sr.created_at,
                 c.Category_name,
-                u.User_name AS Student_name,
-                u.Profile_picture AS Student_avatar
+                u.User_name AS Student_name
             FROM Support_request sr
                      JOIN Category c ON sr.Category_id = c.Category_id
                      JOIN User u ON sr.User_id = u.User_id
