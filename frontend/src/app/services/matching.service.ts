@@ -36,7 +36,7 @@ export class MatchingService {
           user_id: row.User_id,
           user_name: row.User_name,
           avatar_url:
-            'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&h=200&q=80',
+            'https://media.istockphoto.com/id/519078727/photo/male-silhouette-as-avatar-profile-picture.webp?b=1&s=612x612&w=0&k=20&c=e-ihFzR4K3T7-bu3IHpBbRz2C-BY4WKB1Qn-rQysAFs=',
           support_category: row.Category_name,
           all_categories: row.All_Categories || row.Category_name || '',
           skills_description: row.Bio || '',
@@ -50,6 +50,10 @@ export class MatchingService {
     );
   }
 
+  assignVolunteer(requestId: number, volunteerId: number): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/requests/${requestId}/assign`, { volunteerId });
+  }
+
   // Creates and stores request with initial status 'Pending' in MySQL (FR19)
   createRequest(request: SupportRequest): Observable<{ success: boolean; request_id: number }> {
     const categoryMap: { [key: string]: number } = {
@@ -61,7 +65,7 @@ export class MatchingService {
 
     const payload = {
       userId: request.student_id,
-      volunteerId: request.volunteer_id || null,
+      volunteerId: request.volunteer_id, // Receives assigned volunteer ID directly
       categoryId: categoryMap[request.category] || 1,
       description: request.description,
       preferredDate: request.preferred_date,
@@ -108,6 +112,13 @@ export class MatchingService {
     );
   }
 
+  reselectVolunteer(requestId: number, newVolunteerId: number): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/requests/${requestId}/reselect`, { newVolunteerId });
+  }
+
+  updateRequestCriteria(requestId: number | string, data: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/requests/${requestId}`, data);
+  }
   // Fetches pending requests assigned to volunteer from MySQL (FR21 / Flow 5)
   getVolunteerIncoming(volunteerId: number): Observable<SupportRequest[]> {
     return this.http.get<any[]>(`${this.apiUrl}/requests/volunteer/${volunteerId}`).pipe(

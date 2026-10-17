@@ -201,7 +201,17 @@ exports.getStudentRequests = async (req, res) => {
 
     try {
         const query = `
-            SELECT sr.*, c.Category_name, u.User_name AS Volunteer_name
+            SELECT
+                sr.Request_id,
+                sr.Category_id,
+                sr.Description,
+                sr.Preferred_date,
+                sr.Preferred_time,
+                sr.Support_mode,
+                sr.Request_status,
+                sr.created_at,
+                c.Category_name,
+                u.User_name AS Volunteer_name
             FROM Support_request sr
                      JOIN Category c ON sr.Category_id = c.Category_id
                      LEFT JOIN Volunteer v ON sr.Volunteer_id = v.Volunteer_id
@@ -223,7 +233,18 @@ exports.getVolunteerInbox = async (req, res) => {
 
     try {
         const query = `
-            SELECT sr.*, c.Category_name, u.User_name AS Student_name, u.Email AS Student_email
+            SELECT
+                sr.Request_id,
+                sr.Category_id,
+                sr.Description,
+                sr.Preferred_date,
+                sr.Preferred_time,
+                sr.Support_mode,
+                sr.Request_status,
+                sr.created_at,
+                c.Category_name,
+                u.User_name AS Student_name,
+                u.Profile_picture AS Student_avatar
             FROM Support_request sr
                      JOIN Category c ON sr.Category_id = c.Category_id
                      JOIN User u ON sr.User_id = u.User_id
@@ -259,5 +280,86 @@ exports.updateRequestStatus = async (req, res) => {
     } catch (error) {
         console.error('Error updating status:', error);
         res.status(500).json({ message: 'Database error updating status' });
+    }
+};
+
+// Assign chosen volunteer to the created request (FR19)
+exports.assignVolunteerToRequest = async (req, res) => {
+    const { requestId } = req.params;
+    const { volunteerId } = req.body;
+
+    if (!volunteerId) {
+        return res.status(400).json({ message: 'Volunteer ID is required.' });
+    }
+
+    try {
+        const query = `
+            UPDATE Support_request 
+            SET Volunteer_id = ?, Request_status = 'Pending' 
+            WHERE Request_id = ?
+        `;
+        const [result] = await db.query(query, [volunteerId, requestId]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Request not found.' });
+        }
+
+        return res.status(200).json({ message: 'Volunteer assigned successfully.' });
+    } catch (error) {
+        console.error('Error assigning volunteer:', error);
+        return res.status(500).json({ message: 'Database error assigning volunteer.' });
+    }
+};
+
+exports.reselectVolunteer = async (req, res) => {
+    const { requestId } = req.params;
+    const { newVolunteerId } = req.body;
+
+    if (!newVolunteerId) {
+        return res.status(400).json({ message: 'New volunteer ID is required.' });
+    }
+
+    try {
+        const query = `
+            UPDATE Support_request 
+            SET Volunteer_id = ?, Request_status = 'Pending', created_at = CURRENT_TIMESTAMP
+            WHERE Request_id = ?
+        `;
+        const [result] = await db.query(query, [newVolunteerId, requestId]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Request not found.' });
+        }
+
+        res.json({ message: 'Volunteer updated successfully. Status reset to Pending.' });
+    } catch (error) {
+        console.error('Error reselecting volunteer:', error);
+        res.status(500).json({ message: 'Database error reselecting volunteer.' });
+    }
+};
+
+
+exports.updateSupportRequest = async (req, res) => {
+    const { requestId } = req.params;
+    const { categoryId, description, preferredDate, preferredTime, supportMode } = req.body;
+
+    try {
+        const query = `
+            UPDATE Support_request 
+            SET Category_id = ?, Description = ?, Preferred_date = ?, Preferred_time = ?, Support_mode = ?, Request_status = 'Pending', Volunteer_id = NULL
+            WHERE Request_id = ?
+        `;
+        const [result] = await db.query(query, [
+            categoryId, description, preferredDate, preferredTime, supportMode, requestId
+        ]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Request not found' });
+        }
+
+        res.json({ message: 'Request criteria updated successfully', requestId });
+    } catch (error) {
+        console.error('Error updating request criteria:', error);
+        res.status(500).json({ message: 'Database error updating request' });
     }
 };

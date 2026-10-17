@@ -5,13 +5,14 @@ import { MatchingService } from '../../services/matching.service';
 
 export interface StudentRequestItem {
   request_id: number | string;
-  title: string;
   category: string;
   description: string;
-  volunteer_name: string;
-  created_at: string;
+  preferred_date: string;
+  preferred_time: string;
   support_mode: string;
+  volunteer_name: string;
   status: 'Pending' | 'Accepted' | 'Cancelled' | 'Rejected';
+  created_at: string;
 }
 
 @Component({
@@ -24,8 +25,8 @@ export interface StudentRequestItem {
 export class StudentRequests implements OnInit {
   requests: StudentRequestItem[] = [];
   isLoading: boolean = false;
-  studentId: number = 1; // Current test student ID
-  currentSystemDate: Date = new Date(); // Compares against current time
+  studentId: number = 1; // Default logged-in student user ID
+  currentSystemDate: Date = new Date();
 
   constructor(
     private matchingService: MatchingService,
@@ -41,16 +42,16 @@ export class StudentRequests implements OnInit {
     this.isLoading = true;
     this.matchingService.getStudentRequests(this.studentId).subscribe({
       next: (data: any[]) => {
-        // Map database attributes so req.title and other template bindings are satisfied
         this.requests = data.map((item) => ({
-          request_id: item.request_id || item.Request_id,
-          title: item.category || item.Category_name || 'Support Request',
-          category: item.category || item.Category_name,
-          description: item.description || item.Description,
-          volunteer_name: item.volunteer_name || item.Volunteer_name || 'Unassigned',
+          request_id: item.Request_id || item.request_id,
+          category: item.Category_name || item.category || 'Academic Support',
+          description: item.Description || item.description || '',
+          preferred_date: item.Preferred_date || item.preferred_date || item.created_at,
+          preferred_time: item.Preferred_time || item.preferred_time || '09:00',
+          support_mode: item.Support_mode || item.support_mode || 'Virtual',
+          volunteer_name: item.Volunteer_name || item.volunteer_name || 'Unassigned',
+          status: item.Request_status || item.status || 'Pending',
           created_at: item.created_at || new Date().toISOString(),
-          support_mode: item.support_mode || item.Support_mode,
-          status: item.status || item.Request_status || 'Pending',
         }));
         this.isLoading = false;
         this.cdr.detectChanges();
@@ -63,33 +64,61 @@ export class StudentRequests implements OnInit {
     });
   }
 
-  // Resolves: Property 'formatDate' does not exist on type 'StudentRequests'
-  formatDate(dateString: string): string {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
-  }
-
-  // Resolves: Property 'isStalePending' does not exist on type 'StudentRequests'
-  isStalePending(req: StudentRequestItem): boolean {
-    if (req.status !== 'Pending') {
-      return false;
+  // Eligible if Rejected OR Pending for >= 3 days
+  canChangeVolunteer(req: StudentRequestItem): boolean {
+    if (req.status === 'Rejected') {
+      return true;
     }
-    const createdDate = new Date(req.created_at);
-    const diffTime = Math.abs(this.currentSystemDate.getTime() - createdDate.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays > 3; // True if pending for more than 3 days
+
+    if (req.status === 'Pending') {
+      const createdDate = new Date(req.created_at);
+      const diffTime = Math.abs(this.currentSystemDate.getTime() - createdDate.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays >= 3;
+    }
+
+    return false;
   }
 
-  // Alternative Flow 6a: Re-select volunteer
   onChangeVolunteer(req: StudentRequestItem): void {
+    const numericId = String(req.request_id).replace(/\D/g, '');
+
+    let cleanDate = req.preferred_date;
+    if (cleanDate && cleanDate.includes('T')) {
+      cleanDate = cleanDate.split('T')[0];
+    }
+
+    // Passes existing parameters to matching results
     this.router.navigate(['/matching-results'], {
       queryParams: {
         category: req.category,
         mode: req.support_mode,
-        requestId: req.request_id,
+        date: cleanDate,
+        time: req.preferred_time,
+        requestId: numericId,
       },
     });
+  }
+
+  formatDate(dateString: string): string {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const d = String(date.getDate()).padStart(2, '0');
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const y = date.getFullYear();
+    return `${d}/${m}/${y}`;
+  }
+
+  formatTime(timeStr: string): string {
+    if (!timeStr) return '';
+    const parts = timeStr.trim().split(':');
+    if (parts.length < 2) return timeStr;
+
+    let hour = parseInt(parts[0], 10);
+    const minute = parts[1];
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    hour = hour % 12 || 12;
+    return `${hour}:${minute} ${ampm}`;
   }
 
   onGoBack(): void {

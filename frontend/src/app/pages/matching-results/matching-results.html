@@ -13,6 +13,13 @@
         <h1 class="page-title">Available Volunteers</h1>
       </div>
 
+      <div class="filter-bar">
+        <label for="skillFilter"><strong>Skill:</strong></label>
+        <select id="skillFilter" class="skill-dropdown" disabled title="Skill filtering active in Iteration 2">
+          <option value="">All Skills</option>
+        </select>
+      </div>
+
       <!-- Loading State -->
       <div *ngIf="isLoading" class="loading-state">
         <p>Analyzing request and finding suitable volunteers...</p>

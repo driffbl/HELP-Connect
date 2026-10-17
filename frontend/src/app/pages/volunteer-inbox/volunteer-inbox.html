@@ -1,12 +1,12 @@
 <div class="page-container">
-  <!-- Top Navigation Header -->
+  <!-- Top Red Navigation Header -->
   <header class="app-header">
     <div class="brand-title">HELP Connect</div>
     <div class="header-right">
-      <button type="button" class="icon-btn">
+      <button type="button" class="icon-btn" aria-label="Notifications">
         <svg viewBox="0 0 24 24" class="header-icon"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
       </button>
-      <button type="button" class="icon-btn">
+      <button type="button" class="icon-btn" aria-label="User Profile">
         <svg viewBox="0 0 24 24" class="header-icon"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
       </button>
     </div>
@@ -15,7 +15,7 @@
   <main class="main-content">
     <div class="dashboard-card">
 
-      <!-- Card Header -->
+      <!-- Header with Back Button -->
       <div class="card-header">
         <button type="button" class="btn-back" (click)="onGoBack()">
           <span class="arrow">&larr;</span> Go Back
@@ -23,41 +23,72 @@
         <h1 class="page-title">Incoming Requests</h1>
       </div>
 
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="loading-state">
+        <p>Loading incoming requests...</p>
+      </div>
+
       <!-- Empty State -->
-      <div *ngIf="pendingRequests.length === 0" class="empty-state">
+      <div *ngIf="!isLoading && pendingRequests.length === 0" class="empty-state">
         <p>You have no pending requests at this time.</p>
       </div>
 
-      <!-- Requests List -->
-      <div class="requests-list" *ngIf="pendingRequests.length > 0">
-        <article *ngFor="let req of pendingRequests" class="request-card">
+      <!-- Requests List matching Recommended Layout -->
+      <div class="requests-list" *ngIf="!isLoading && pendingRequests.length > 0">
+        <article *ngFor="let req of pendingRequests" class="inbox-card">
 
-          <!-- Top Strip: ID & Category -->
+          <!-- Top Strip: #ID on Left, Status on Right -->
           <div class="card-top-strip">
-            <span class="request-id">{{ req.request_id }}</span>
-            <span class="request-category">{{ req.category }}</span>
+            <span class="request-id">#{{ req.request_id }}</span>
+            <span class="request-status status-pending">{{ req.status }}</span>
           </div>
 
-          <!-- Body: Request Details -->
+          <!-- Card Content Body -->
           <div class="card-body">
-            <div class="details-row">
-              <h2 class="request-title">{{ req.title }}</h2>
-              <span class="status-badge pending">Pending</span>
+
+            <!-- Student Profile Header (Avatar + Name + Category) -->
+            <div class="student-profile-header">
+              <div class="avatar-wrapper">
+                <img [src]="req.student_avatar" [alt]="req.student_name" class="student-avatar" />
+              </div>
+              <div class="student-text-info">
+                <h2 class="student-name">{{ req.student_name }}</h2>
+                <span class="category-subtitle">{{ req.category }}</span>
+              </div>
             </div>
 
-            <div class="meta-grid">
-              <p class="meta-data"><strong>Student:</strong> {{ req.student_name }}</p>
-              <p class="meta-data"><strong>Date:</strong> {{ req.date }}</p>
-              <p class="meta-data"><strong>Time:</strong> {{ req.time }}</p>
-              <p class="meta-data"><strong>Mode:</strong> {{ req.support_mode }}</p>
-              <p class="meta-data"><strong>Description:</strong> {{ req.description }}</p>
+            <!-- Description Block -->
+            <div class="description-block">
+              <span class="desc-label">Description</span>
+              <p class="desc-content">{{ req.description || 'No description provided.' }}</p>
             </div>
-          </div>
 
-          <!-- Footer Actions: Reject / Accept -->
-          <div class="card-actions">
-            <button class="btn-reject" (click)="onRejectRequest(req)">[ Reject ]</button>
-            <button class="btn-accept" (click)="onAcceptRequest(req)">[ Accept Request ]</button>
+            <!-- Metadata List -->
+            <div class="meta-section">
+              <p class="meta-row">
+                <span class="meta-key">Preferred Date</span>
+                <span class="meta-val">{{ formatDate(req.date) }}</span>
+              </p>
+              <p class="meta-row">
+                <span class="meta-key">Preferred Time</span>
+                <span class="meta-val">{{ formatTime(req.time) }}</span>
+              </p>
+              <p class="meta-row">
+                <span class="meta-key">Support Mode</span>
+                <span class="meta-val">{{ req.support_mode }}</span>
+              </p>
+            </div>
+
+            <!-- Footer Actions: Reject & Accept -->
+            <div class="card-actions">
+              <button type="button" class="btn-reject" (click)="onRejectRequest(req)">
+                 Reject
+              </button>
+              <button type="button" class="btn-accept" (click)="onAcceptRequest(req)">
+                 Accept Request
+              </button>
+            </div>
+
           </div>
 
         </article>

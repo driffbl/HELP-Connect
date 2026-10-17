@@ -17,4 +17,7 @@ router.get('/requests/volunteer/:volunteerId', matchingController.getVolunteerIn
 // Volunteer accepts or rejects
 router.patch('/requests/:requestId/status', matchingController.updateRequestStatus);
 
+router.patch('/requests/:requestId/assign', matchingController.assignVolunteerToRequest);
+router.patch('/requests/:requestId/reselect', matchingController.reselectVolunteer);
+router.put('/requests/:requestId', matchingController.updateSupportRequest);
 module.exports = router;
