@@ -1,14 +1,67 @@
-<div class="container">
-  <h1>HELP Connect</h1>
-  <p style="text-align: center; margin-bottom: 30px; color: #666;">
-    Peer-to-peer student support platform
+<app-header></app-header>
+
+<!-- Before login -->
+<div class="hero" *ngIf="!user">
+  <div class="hero-left">
+    <h1>Need a hand?</h1>
+    <p class="hero-text">
+      HELP Connect is a peer-to-peer support platform made by HELP students,
+      for HELP students.
+    </p>
+    <button class="btn-outline" routerLink="/signup" style="margin-bottom: 12px;">
+      → Register to get started
+    </button>
+    <button class="btn-outline" routerLink="/login">
+      → Already have an account? Sign In
+    </button>
+  </div>
+  <div class="hero-right">
+    <img src="campus.jpg" alt="Campus" class="hero-image" />
+  </div>
+</div>
+
+<!-- After login -->
+<div class="hero-logged-in" *ngIf="user">
+  <h1>Need a hand?</h1>
+  <p class="hero-text">
+    HELP Connect is a peer-to-peer support platform made by HELP students,
+    for HELP students.
   </p>
 
-  <button routerLink="/signup" style="margin-bottom: 12px;">Register</button>
-  <button
-    routerLink="/login"
-    style="background: #fff; color: #e63946; border: 2px solid #e63946;"
-  >
-    Sign In
-  </button>
+  <div class="action-list">
+    <!-- Unlinked: Shows an alert -->
+    <button type="button" class="btn-primary" style="margin-bottom: 12px;" (click)="showComingSoon()">
+      I would like to request support
+    </button>
+    
+    <!-- Unlinked: Shows an alert -->
+    <button type="button" class="btn-primary" style="margin-bottom: 12px;" (click)="showComingSoon()">
+      I would like to check on My Sessions
+    </button>
+    
+    <!-- Linked: Goes to volunteer page -->
+    <button type="button" class="btn-primary" routerLink="/volunteer/register">
+      I would like to volunteer
+    </button>
+  </div>
+
+  <div class="quick-links">
+    <!-- Unlinked -->
+    <button type="button" class="quick-card" (click)="showComingSoon()">
+      <div class="quick-icon">👥</div>
+      <div class="quick-label">Browse Volunteers</div>
+    </button>
+    
+    <!-- Linked: Goes to dashboard -->
+    <a routerLink="/dashboard" class="quick-card">
+      <div class="quick-icon">👤</div>
+      <div class="quick-label">Profile</div>
+    </a>
+    
+    <!-- Unlinked -->
+    <button type="button" class="quick-card" (click)="showComingSoon()">
+      <div class="quick-icon">⏱</div>
+      <div class="quick-label">Past Sessions</div>
+    </button>
+  </div>
 </div>

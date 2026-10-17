@@ -1,0 +1,67 @@
+<app-header></app-header>
+
+<div class="page-container" style="max-width: 620px;">
+  
+  <div *ngIf="loading()" style="text-align: center; color: #666; padding: 40px;">
+    Loading profile...
+  </div>
+
+  <div *ngIf="!loading() && error()" class="error">⚠️ {{ error() }}</div>
+
+  <div *ngIf="!loading() && volunteer()">
+    <h1>Volunteer Profile</h1>
+
+    <div class="success">You are a registered volunteer </div>
+
+    <div class="profile-field">
+      <label>Name</label>
+      <p>{{ volunteer().User_name }}</p>
+    </div>
+
+    <div class="profile-field">
+      <label>Email</label>
+      <p>{{ volunteer().Email }}</p>
+    </div>
+
+    <div class="profile-field">
+      <label>Availability</label>
+      <p>{{ volunteer().Availability }}</p>
+    </div>
+
+    <div class="profile-field">
+      <label>Preferred Mode</label>
+      <p>{{ volunteer().Preferred_Mode }}</p>
+    </div>
+
+    <div class="profile-field" *ngIf="volunteer().Bio">
+      <label>Bio</label>
+      <p>{{ volunteer().Bio }}</p>
+    </div>
+
+    <!-- Categories -->
+    <div class="profile-field">
+      <label>Support Categories</label>
+      <div class="category-list">
+        <span *ngFor="let cat of volunteer().categories" class="category-tag">
+          {{ cat.Category_name }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Skills -->
+    <div class="profile-field" *ngIf="volunteer().skills && volunteer().skills.length > 0">
+      <label>Specific Skills</label>
+      <div class="category-list">
+        <span *ngFor="let skill of volunteer().skills" class="category-tag">
+          {{ skill.Skill_name }}
+        </span>
+      </div>
+    </div>
+
+    <a routerLink="/dashboard" style="text-decoration: none;">
+      <button class="btn-outline" style="margin-top: 24px;">
+        Back to Dashboard
+      </button>
+    </a>
+  </div>
+</div>
