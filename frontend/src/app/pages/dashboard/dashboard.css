@@ -1,0 +1,40 @@
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.dash-card {
+  display: block;
+  padding: 24px 20px;
+  background: white;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  text-decoration: none;
+  color: #333;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.dash-card:hover {
+  border-color: #e63946;
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+}
+
+.dash-icon {
+  font-size: 36px;
+  margin-bottom: 12px;
+}
+
+.dash-card h3 {
+  font-size: 15px;
+  margin-bottom: 6px;
+  color: #e63946;
+}
+
+.dash-card p {
+  font-size: 13px;
+  color: #888;
+}

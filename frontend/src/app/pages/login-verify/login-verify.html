@@ -1,7 +1,9 @@
-<div class="container">
+<app-header></app-header>
+
+<div class="page-container">
   <h1>Login Verification</h1>
-  <p style="text-align: center; margin-bottom: 20px; color: #666;">
-    A 6-digit code was sent to <strong>{{ email }}</strong>
+  <p style="text-align: center; color: #666; margin-bottom: 24px;">
+    A code was sent to <strong>{{ email }}</strong>
   </p>
 
   <div class="error" *ngIf="error">{{ error }}</div>
@@ -14,11 +16,10 @@
       [(ngModel)]="code"
       placeholder="Enter 6-digit code"
       maxlength="6"
-      pattern="[0-9]{6}"
       required
     />
 
-    <button type="submit" [disabled]="loading">
+    <button type="submit" class="btn-primary" [disabled]="loading">
       {{ loading ? 'Verifying...' : 'Confirm' }}
     </button>
   </form>

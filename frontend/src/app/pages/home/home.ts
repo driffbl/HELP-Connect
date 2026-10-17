@@ -1,10 +1,23 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { Header } from '../../components/header/header';
 
 @Component({
   selector: 'app-home',
-  imports: [RouterLink],
+  imports: [CommonModule, RouterLink, Header],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
-export class Home {}
+export class Home implements OnInit {
+  user: any = null;
+
+  ngOnInit() {
+    const stored = localStorage.getItem('user');
+    this.user = stored ? JSON.parse(stored) : null;
+  }
+
+  showComingSoon() {
+    alert('This feature will be available in the next update (UC2 / UC3).');
+  }
+}
