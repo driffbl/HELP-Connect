@@ -29,29 +29,39 @@
   </p>
 
   <div class="action-list">
-    <button class="btn-primary" routerLink="/dashboard" style="margin-bottom: 12px;">
+    <!-- Unlinked: Shows an alert -->
+    <button type="button" class="btn-primary" style="margin-bottom: 12px;" (click)="showComingSoon()">
       I would like to request support
     </button>
-    <button class="btn-primary" routerLink="/dashboard" style="margin-bottom: 12px;">
+    
+    <!-- Unlinked: Shows an alert -->
+    <button type="button" class="btn-primary" style="margin-bottom: 12px;" (click)="showComingSoon()">
       I would like to check on My Sessions
     </button>
-    <button class="btn-primary" routerLink="/volunteer/register">
+    
+    <!-- Linked: Goes to volunteer page -->
+    <button type="button" class="btn-primary" routerLink="/volunteer/register">
       I would like to volunteer
     </button>
   </div>
 
   <div class="quick-links">
-    <a routerLink="/dashboard" class="quick-card">
+    <!-- Unlinked -->
+    <button type="button" class="quick-card" (click)="showComingSoon()">
       <div class="quick-icon">👥</div>
       <div class="quick-label">Browse Volunteers</div>
-    </a>
+    </button>
+    
+    <!-- Linked: Goes to dashboard -->
     <a routerLink="/dashboard" class="quick-card">
       <div class="quick-icon">👤</div>
       <div class="quick-label">Profile</div>
     </a>
-    <a routerLink="/dashboard" class="quick-card">
+    
+    <!-- Unlinked -->
+    <button type="button" class="quick-card" (click)="showComingSoon()">
       <div class="quick-icon">⏱</div>
       <div class="quick-label">Past Sessions</div>
-    </a>
+    </button>
   </div>
 </div>

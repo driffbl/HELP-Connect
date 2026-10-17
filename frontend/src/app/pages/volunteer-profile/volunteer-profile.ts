@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Api } from '../../services/api';
@@ -13,19 +13,22 @@ import { Header } from '../../components/header/header';
 export class VolunteerProfile implements OnInit {
   private api = inject(Api);
 
-  volunteer: any = null;
-  error = '';
-  loading = true;
+  // THE FIX: These MUST be signals. Notice the signal() wrapper.
+  volunteer = signal<any>(null);
+  error = signal('');
+  loading = signal(true);
 
   ngOnInit() {
     this.api.getVolunteerProfile().subscribe({
       next: (res: any) => {
-        this.volunteer = res.volunteer;
-        this.loading = false;
+        console.log('Profile loaded:', res);
+        this.volunteer.set(res.volunteer);
+        this.loading.set(false); // Notice the .set()
       },
       error: (err: any) => {
-        this.error = err.error?.message || 'Could not load volunteer profile.';
-        this.loading = false;
+        console.log('Profile error:', err);
+        this.error.set(err.error?.message || 'Could not load profile.');
+        this.loading.set(false); // Notice the .set()
       },
     });
   }

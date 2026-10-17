@@ -16,4 +16,8 @@ export class Home implements OnInit {
     const stored = localStorage.getItem('user');
     this.user = stored ? JSON.parse(stored) : null;
   }
+
+  showComingSoon() {
+    alert('This feature will be available in the next update (UC2 / UC3).');
+  }
 }

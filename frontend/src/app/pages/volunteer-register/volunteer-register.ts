@@ -15,9 +15,11 @@ export class VolunteerRegister implements OnInit {
   private api = inject(Api);
   private router = inject(Router);
 
-  // ── Signals ──
   categories = signal<{ Category_id: number; Category_name: string }[]>([]);
+  skills = signal<{ Skills_id: number; Skill_name: string }[]>([]);
+  
   selectedCategories = signal<number[]>([]);
+  selectedSkills = signal<number[]>([]);
 
   form = {
     availability: '',
@@ -29,18 +31,14 @@ export class VolunteerRegister implements OnInit {
   loading = signal(false);
 
   ngOnInit() {
-    console.log('🟢 ngOnInit FIRED');
-
     this.api.listCategories().subscribe({
-      next: (res: any) => {
-        console.log('🟢 API RESPONSE:', res);
-        this.categories.set(res.categories);
-        console.log('🟢 categories.set called with', res.categories.length, 'items');
-      },
-      error: (err: any) => {
-        console.log('🔴 API ERROR:', err);
-        this.error.set('Failed to load categories.');
-      },
+      next: (res: any) => this.categories.set(res.categories),
+      error: () => this.error.set('Failed to load categories.'),
+    });
+
+    this.api.listSkills().subscribe({
+      next: (res: any) => this.skills.set(res.skills),
+      error: () => this.error.set('Failed to load skills.'),
     });
   }
 
@@ -57,6 +55,19 @@ export class VolunteerRegister implements OnInit {
     return this.selectedCategories().includes(id);
   }
 
+  toggleSkill(id: number) {
+    const current = this.selectedSkills();
+    if (current.includes(id)) {
+      this.selectedSkills.set(current.filter((x) => x !== id));
+    } else {
+      this.selectedSkills.set([...current, id]);
+    }
+  }
+
+  isSkillSelected(id: number): boolean {
+    return this.selectedSkills().includes(id);
+  }
+
   onSubmit() {
     this.error.set('');
 
@@ -71,21 +82,20 @@ export class VolunteerRegister implements OnInit {
 
     this.loading.set(true);
 
-    this.api
-      .registerVolunteer({
-        availability: this.form.availability,
-        preferred_mode: this.form.preferred_mode,
-        bio: this.form.bio,
-        category_ids: this.selectedCategories(),
-      })
-      .subscribe({
-        next: () => {
-          this.router.navigate(['/volunteer/profile']);
-        },
-        error: (err: any) => {
-          this.error.set(err.error?.message || 'Registration failed.');
-          this.loading.set(false);
-        },
-      });
+    this.api.registerVolunteer({
+      availability: this.form.availability,
+      preferred_mode: this.form.preferred_mode,
+      bio: this.form.bio,
+      category_ids: this.selectedCategories(),
+      skill_ids: this.selectedSkills(),
+    }).subscribe({
+      next: () => {
+        this.router.navigate(['/volunteer/profile']);
+      },
+      error: (err: any) => {
+        this.error.set(err.error?.message || 'Registration failed.');
+        this.loading.set(false);
+      },
+    });
   }
 }

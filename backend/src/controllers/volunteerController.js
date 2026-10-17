@@ -3,7 +3,7 @@ const db = require('../config/db');
 // POST /api/volunteer/register
 exports.register = async (req, res) => {
   const userId = req.user.User_id;
-  const { availability, preferred_mode, bio, category_ids } = req.body;
+  const { availability, preferred_mode, bio, category_ids, skill_ids } = req.body;
 
   if (!availability || !preferred_mode) {
     return res.status(400).json({ message: 'Availability and preferred mode are required.' });
@@ -34,11 +34,21 @@ exports.register = async (req, res) => {
 
     const volunteerId = result.insertId;
 
-    const values = category_ids.map((cid) => [volunteerId, cid]);
+    // Insert categories
+    const catValues = category_ids.map((cid) => [volunteerId, cid]);
     await db.query(
       'INSERT INTO Volunteer_Category (Volunteer_id, Category_id) VALUES ?',
-      [values]
+      [catValues]
     );
+
+    // Insert skills (if provided)
+    if (Array.isArray(skill_ids) && skill_ids.length > 0) {
+      const skillValues = skill_ids.map((sid) => [volunteerId, sid]);
+      await db.query(
+        'INSERT INTO Volunteer_Skill (Volunteer_id, Skills_id) VALUES ?',
+        [skillValues]
+      );
+    }
 
     return res.status(201).json({
       message: 'Successfully registered as a volunteer!',
@@ -79,8 +89,16 @@ exports.getProfile = async (req, res) => {
       [volunteer.Volunteer_id]
     );
 
+    const [skills] = await db.query(
+      `SELECT s.Skills_id, s.Skill_name
+       FROM Volunteer_Skill vs
+       JOIN Skills s ON s.Skills_id = vs.Skills_id
+       WHERE vs.Volunteer_id = ?`,
+      [volunteer.Volunteer_id]
+    );
+
     return res.status(200).json({
-      volunteer: { ...volunteer, categories: cats },
+      volunteer: { ...volunteer, categories: cats, skills: skills },
     });
   } catch (err) {
     console.error('Get volunteer profile error:', err);
@@ -88,13 +106,24 @@ exports.getProfile = async (req, res) => {
   }
 };
 
-// GET /api/volunteer/categories — public list
+// GET /api/volunteer/categories
 exports.listCategories = async (req, res) => {
   try {
     const [cats] = await db.query('SELECT Category_id, Category_name FROM Category');
     return res.status(200).json({ categories: cats });
   } catch (err) {
     console.error('List categories error:', err);
+    return res.status(500).json({ message: 'Server error.' });
+  }
+};
+
+// GET /api/volunteer/skills
+exports.listSkills = async (req, res) => {
+  try {
+    const [skills] = await db.query('SELECT Skills_id, Skill_name FROM Skills');
+    return res.status(200).json({ skills });
+  } catch (err) {
+    console.error('List skills error:', err);
     return res.status(500).json({ message: 'Server error.' });
   }
 };

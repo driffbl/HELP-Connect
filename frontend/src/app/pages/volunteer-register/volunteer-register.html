@@ -26,21 +26,18 @@
     <textarea
       name="bio"
       [(ngModel)]="form.bio"
-      rows="4"
+      rows="3"
       placeholder="Tell students about yourself..."
     ></textarea>
 
+    <!-- Categories -->
     <label>Support Categories</label>
-    <p style="font-size: 13px; color: #888; margin-bottom: 10px;">
-      Select the categories you're confident in helping with.
-    </p>
+    <p class="helper-text">Select the categories you're confident in helping with.</p>
 
-    <!-- Loading state -->
-    <div *ngIf="categories().length === 0" style="text-align: center; color: #888; padding: 20px;">
+    <div *ngIf="categories().length === 0" class="loading-text">
       Loading categories...
     </div>
 
-    <!-- Category chips -->
     <div class="category-list" *ngIf="categories().length > 0">
       <button
         type="button"
@@ -53,6 +50,27 @@
       </button>
     </div>
 
+    <!-- Skills -->
+    <label>Specific Skills</label>
+    <p class="helper-text">Select specific skills you are confident in offering support for.</p>
+
+    <div *ngIf="skills().length === 0" class="loading-text">
+      Loading skills...
+    </div>
+
+    <div class="category-list" *ngIf="skills().length > 0">
+      <button
+        type="button"
+        *ngFor="let skill of skills()"
+        class="category-chip"
+        [class.selected]="isSkillSelected(skill.Skills_id)"
+        (click)="toggleSkill(skill.Skills_id)"
+      >
+        #{{ skill.Skill_name }}
+      </button>
+    </div>
+
+    <!-- Submit -->
     <button type="submit" class="btn-primary" [disabled]="loading()" style="margin-top: 24px;">
       {{ loading() ? 'Registering...' : 'Confirm' }}
     </button>
