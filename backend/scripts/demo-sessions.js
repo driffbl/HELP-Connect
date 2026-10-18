@@ -3,7 +3,8 @@
  * so every Use Case 3 page has something to show. Creating a request has no screen yet.
  *
  *   cd backend
- *   node scripts/demo-sessions.js
+ *   node scripts/demo-sessions.js                         (between the two seeded test users)
+ *   node scripts/demo-sessions.js student@x.y volunteer@x.y   (between two real, verified accounts)
  *
  * Safe to re-run: it first removes the sessions between these two test users (and their feedback and
  * notifications) and makes a fresh set. Dates are relative to now. Running scripts/smoke-usecase3.js
@@ -18,7 +19,10 @@ if (process.env.NODE_ENV === 'production') {
 
 const db = require('../src/config/db');
 
-const EMAILS = { student: 'student.test@helplive.edu.my', volunteer: 'volunteer.test@helplive.edu.my' };
+const EMAILS = {
+  student: process.argv[2] || 'student.test@helplive.edu.my',
+  volunteer: process.argv[3] || 'volunteer.test@helplive.edu.my',
+};
 
 const pad = (n) => String(n).padStart(2, '0');
 const sqlDate = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
@@ -68,7 +72,7 @@ async function main() {
     console.log(`  added  ${d.status.padEnd(9)} ${d.title}`);
   }
 
-  console.log(`\nDone: ${DEMO.length} sessions between the test student and the test volunteer.`);
+  console.log(`\nDone: ${DEMO.length} sessions between ${EMAILS.student} (student) and ${EMAILS.volunteer} (volunteer).`);
   return 0;
 }
 

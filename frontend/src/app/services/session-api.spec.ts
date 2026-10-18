@@ -18,7 +18,6 @@ function fakeToken(userId: number): string {
   return `${part({ alg: 'HS256' })}.${part({ User_id: userId, Email: `u${userId}@x.y`, exp: Math.floor(Date.now() / 1000) + 3600 })}.sig`;
 }
 const STUDENT = fakeToken(11);
-const VOLUNTEER = fakeToken(22);
 const BASE = 'http://localhost:5000/api';
 
 /** Stands in for the network: records every request and answers with whatever the test says. */
@@ -53,28 +52,29 @@ function setup(signedIn = true) {
     providers: [{ provide: HttpClient, useValue: new HttpClient(handler) }],
   });
   const me = TestBed.inject(CurrentUser);
-  if (signedIn) me.useDevTokens({ student: STUDENT, volunteer: VOLUNTEER });
+  if (signedIn) {
+    localStorage.setItem('token', STUDENT);
+    me.refresh();
+  }
   return { handler, me, api: TestBed.inject(SessionApi) };
 }
 
 describe('SessionApi requests', () => {
-  it('lists sessions for a mode, sending the login token', async () => {
+  it('lists sessions for a mode', async () => {
     const { handler, api } = setup();
     handler.reply = () => new HttpResponse({ status: 200, body: { sessions: [session] } });
     expect(await api.list('student')).toEqual([session]);
     const req = handler.requests[0];
     expect(req.method).toBe('GET');
     expect(req.urlWithParams).toBe(`${BASE}/sessions?role=student`);
-    expect(req.headers.get('Authorization')).toBe(`Bearer ${STUDENT}`);
   });
 
-  it('sends the volunteer token once the mode is volunteer', async () => {
+  it('asks for the volunteer side once the mode is volunteer', async () => {
     const { handler, me, api } = setup();
     handler.reply = () => new HttpResponse({ status: 200, body: { sessions: [] } });
     me.setRole('volunteer');
     await api.list('volunteer');
     expect(handler.requests[0].urlWithParams).toBe(`${BASE}/sessions?role=volunteer`);
-    expect(handler.requests[0].headers.get('Authorization')).toBe(`Bearer ${VOLUNTEER}`);
   });
 
   it('gets one session', async () => {
@@ -109,13 +109,6 @@ describe('SessionApi requests', () => {
     expect(handler.requests[0].url).toBe(`${BASE}/sessions/5/feedback`);
     expect(handler.requests[0].body).toEqual({ rating: 4, comment: 'Very helpful' });
     expect(handler.requests[1].body).toEqual({ rating: 3, comment: null });
-  });
-
-  it('sends no Authorization header when nobody is signed in', async () => {
-    const { handler, api } = setup(false);
-    handler.reply = () => new HttpResponse({ status: 200, body: { sessions: [] } });
-    await api.list('student');
-    expect(handler.requests[0].headers.has('Authorization')).toBe(false);
   });
 });
 

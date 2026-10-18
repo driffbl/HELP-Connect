@@ -1,15 +1,14 @@
 import { Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
-/** Shown instead of a page's content when nobody is signed in. Delete with the dev-token script when the real login is merged. */
+/** Shown instead of a page's content when nobody is signed in. Points to Coel's login page. */
 @Component({
   selector: 'app-auth-notice',
+  imports: [RouterLink],
   template: `
     <div class="notice" role="alert" data-testid="auth-notice">
       <strong>You are not signed in.</strong>
-      <p>
-        In the backend folder run <code>node scripts/dev-token.js</code> and open the link it
-        prints.
-      </p>
+      <p><a routerLink="/login">Log in</a> to see your sessions.</p>
     </div>
   `,
   styles: [

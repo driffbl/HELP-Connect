@@ -26,9 +26,15 @@ describe('readToken', () => {
   });
 });
 
+function signIn(token: string, user?: unknown) {
+  localStorage.setItem('token', token);
+  if (user !== undefined) localStorage.setItem('user', JSON.stringify(user));
+}
+
 describe('CurrentUser', () => {
   beforeEach(() => {
     localStorage.clear();
+    TestBed.resetTestingModule();
   });
 
   it('is signed out when nothing is stored', () => {
@@ -39,63 +45,56 @@ describe('CurrentUser', () => {
     expect(me.user().role).toBe('student');
   });
 
-  it('signs in with the two dev tokens and starts as the student', () => {
+  it('reads the login Coel\'s pages leave in localStorage', () => {
+    signIn(STUDENT, { User_id: 11, User_name: 'Ali Student', Email: 'student@helplive.edu.my' });
     const me = TestBed.inject(CurrentUser);
-    expect(me.useDevTokens({ student: STUDENT, volunteer: VOLUNTEER })).toBe(true);
     expect(me.signedIn()).toBe(true);
-    expect(me.user().id).toBe(11);
+    expect(me.user()).toEqual({ id: 11, name: 'Ali Student', role: 'student' });
     expect(me.token()).toBe(STUDENT);
   });
 
-  it('switching mode switches the person and the token', () => {
-    const me = TestBed.inject(CurrentUser);
-    me.useDevTokens({ student: STUDENT, volunteer: VOLUNTEER });
-    me.setRole('volunteer');
-    expect(me.user().role).toBe('volunteer');
-    expect(me.user().id).toBe(22);
-    expect(me.token()).toBe(VOLUNTEER);
-    me.setRole('student');
-    expect(me.user().id).toBe(11);
+  it('falls back to the email when the stored user has no name', () => {
+    signIn(STUDENT, 'not an object');
+    expect(TestBed.inject(CurrentUser).user().name).toBe('student@helplive.edu.my');
   });
 
-  it('refuses bad tokens and stays signed out', () => {
+  it('is the same person in both modes; only the role changes', () => {
+    signIn(STUDENT);
     const me = TestBed.inject(CurrentUser);
-    expect(me.useDevTokens({ student: 'junk', volunteer: VOLUNTEER })).toBe(false);
-    expect(
-      me.useDevTokens({
-        student: STUDENT,
-        volunteer: fakeToken({ User_id: 22, exp: aMinuteAgo() }),
-      }),
-    ).toBe(false);
+    me.setRole('volunteer');
+    expect(me.user().role).toBe('volunteer');
+    expect(me.user().id).toBe(11);
+    expect(me.token()).toBe(STUDENT);
+    me.setRole('student');
+    expect(me.user().role).toBe('student');
+  });
+
+  it('ignores a token that is corrupt or expired', () => {
+    signIn('junk');
+    expect(TestBed.inject(CurrentUser).signedIn()).toBe(false);
+    TestBed.resetTestingModule();
+    signIn(fakeToken({ User_id: 11, exp: aMinuteAgo() }));
+    expect(TestBed.inject(CurrentUser).signedIn()).toBe(false);
+  });
+
+  it('refresh picks up a login or logout that happened after it was created', () => {
+    const me = TestBed.inject(CurrentUser);
+    expect(me.signedIn()).toBe(false);
+    signIn(STUDENT);
+    me.refresh();
+    expect(me.signedIn()).toBe(true);
+    expect(me.user().id).toBe(11);
+    localStorage.removeItem('token');
+    me.refresh();
     expect(me.signedIn()).toBe(false);
   });
 
-  it('remembers the tokens after a reload', () => {
-    TestBed.inject(CurrentUser).useDevTokens({ student: STUDENT, volunteer: VOLUNTEER });
-    TestBed.resetTestingModule();
-    const reloaded = TestBed.inject(CurrentUser);
-    expect(reloaded.signedIn()).toBe(true);
-    expect(reloaded.user().id).toBe(11);
-  });
-
-  it('ignores stored tokens that are corrupt or expired', () => {
-    localStorage.setItem('hc.devTokens', 'not json at all');
-    expect(TestBed.inject(CurrentUser).signedIn()).toBe(false);
-
-    TestBed.resetTestingModule();
-    localStorage.setItem(
-      'hc.devTokens',
-      JSON.stringify({ student: fakeToken({ User_id: 11, exp: aMinuteAgo() }), volunteer: 5 }),
-    );
-    expect(TestBed.inject(CurrentUser).signedIn()).toBe(false);
-  });
-
-  it('uses the one stored person for both modes when only one token exists', () => {
-    localStorage.setItem('hc.devTokens', JSON.stringify({ student: STUDENT }));
+  it('switching to another account replaces the person', () => {
+    signIn(STUDENT);
     const me = TestBed.inject(CurrentUser);
-    me.setRole('volunteer');
-    expect(me.signedIn()).toBe(true);
-    expect(me.user().id).toBe(11);
-    expect(me.user().role).toBe('volunteer');
+    signIn(VOLUNTEER);
+    me.refresh();
+    expect(me.user().id).toBe(22);
+    expect(me.token()).toBe(VOLUNTEER);
   });
 });

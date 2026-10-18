@@ -99,23 +99,16 @@ class FakeApi {
   }
 }
 
-function setup(signedIn = true, onePerson = false) {
+function setup(signedIn = true) {
   localStorage.clear();
   TestBed.resetTestingModule();
   TestBed.configureTestingModule({ providers: [{ provide: SessionApi, useClass: FakeApi }] });
   const me = TestBed.inject(CurrentUser);
-  if (signedIn && onePerson) {
-    // How the real login will look: one person, who switches between Student and Volunteer mode.
-    localStorage.setItem('hc.devTokens', JSON.stringify({ student: fakeToken(11) }));
-    TestBed.resetTestingModule();
-    TestBed.configureTestingModule({ providers: [{ provide: SessionApi, useClass: FakeApi }] });
-    return {
-      me: TestBed.inject(CurrentUser),
-      api: TestBed.inject(SessionApi) as unknown as FakeApi,
-      store: TestBed.inject(SessionStore),
-    };
+  if (signedIn) {
+    // One real account, who switches between Student and Volunteer mode.
+    localStorage.setItem('token', fakeToken(11));
+    me.refresh();
   }
-  if (signedIn) me.useDevTokens({ student: fakeToken(11), volunteer: fakeToken(22) });
   return {
     me,
     api: TestBed.inject(SessionApi) as unknown as FakeApi,
@@ -165,7 +158,7 @@ describe('SessionStore loading', () => {
   });
 
   it('keeps the Student and Volunteer lists apart even when it is the same person', async () => {
-    const { store, api, me } = setup(true, true);
+    const { store, api, me } = setup(true);
     api.byRole.student = [make(1)];
     api.byRole.volunteer = [make(2)];
     await store.refresh();

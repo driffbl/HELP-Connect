@@ -1,11 +1,14 @@
 import { Location } from '@angular/common';
 import { Component, inject, input } from '@angular/core';
 import { Router } from '@angular/router';
+import { Header } from '../header/header';
 
 /** The red-bordered page frame with "Go Back" and a centred title, as in the wireframes. */
 @Component({
   selector: 'app-panel',
+  imports: [Header],
   template: `
+    <app-header />
     <main class="panel">
       <div class="head">
         <button type="button" class="back" data-testid="go-back" (click)="back()">

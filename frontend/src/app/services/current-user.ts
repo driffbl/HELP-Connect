@@ -1,7 +1,6 @@
-import { Service, computed, signal } from '@angular/core';
+import { Service, computed, inject, signal } from '@angular/core';
+import { NavigationEnd, Router } from '@angular/router';
 import { AppUser, UserRole } from '../models/session.model';
-
-const STORAGE_KEY = 'hc.devTokens';
 
 /** One signed-in person: their id, a label, and the token the API wants. */
 export interface Identity {
@@ -9,8 +8,6 @@ export interface Identity {
   name: string;
   token: string;
 }
-
-type Identities = Partial<Record<UserRole, Identity>>;
 
 /** Reads the User_id and Email out of a JWT, or null when it is malformed or expired. Not a security check: the server verifies tokens. */
 export function readToken(token: string): Identity | null {
@@ -32,37 +29,37 @@ export function readToken(token: string): Identity | null {
   }
 }
 
-function readStored(): Identities {
+/** The signed-in person, as Coel's login left them in localStorage (`token` and `user`), or null. */
+function readLogin(): Identity | null {
   try {
-    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}') as Record<string, unknown>;
-    const identities: Identities = {};
-    for (const role of ['student', 'volunteer'] as const) {
-      const token = stored[role];
-      const identity = typeof token === 'string' ? readToken(token) : null;
-      if (identity) identities[role] = identity;
-    }
-    return identities;
+    const token = localStorage.getItem('token');
+    const identity = token ? readToken(token) : null;
+    if (!identity) return null;
+    const stored = JSON.parse(localStorage.getItem('user') ?? 'null') as { User_name?: unknown } | null;
+    const name = stored?.User_name;
+    return typeof name === 'string' && name.trim() ? { ...identity, name } : identity;
   } catch {
-    return {};
+    return null;
   }
 }
 
 /**
  * The ONE place Use Case 3 reads "who is logged in" and "which mode they are acting in".
  *
- * Today the identities come from the two test tokens made by backend/scripts/dev-token.js.
- * When the real login is merged, change only the inside of this class: fill `identities` from the
- * logged-in user (one person for both modes) and keep `user`, `token`, `signedIn` and `setRole` as they are.
+ * The person comes from the real login (localStorage `token` and `user`). One account acts as both
+ * student and volunteer; `mode` only chooses which side of a session they are looking at.
+ * Storage is re-read after every navigation, so logging in or out is picked up without a reload.
  */
 @Service()
 export class CurrentUser {
-  private readonly identities = signal<Identities>(readStored());
+  private readonly identity = signal<Identity | null>(readLogin());
   private readonly mode = signal<UserRole>('student');
 
-  private readonly identity = computed<Identity | null>(() => {
-    const all = this.identities();
-    return all[this.mode()] ?? all.student ?? all.volunteer ?? null;
-  });
+  constructor() {
+    inject(Router).events.subscribe((event) => {
+      if (event instanceof NavigationEnd) this.refresh();
+    });
+  }
 
   /** Who is acting. id is 0 when nobody is signed in. */
   readonly user = computed<AppUser>(() => ({
@@ -80,21 +77,11 @@ export class CurrentUser {
     this.mode.set(role);
   }
 
-  /** Development only: remembers the two test tokens so a page reload keeps you signed in. */
-  useDevTokens(tokens: { student: string; volunteer: string }): boolean {
-    const student = readToken(tokens.student);
-    const volunteer = readToken(tokens.volunteer);
-    if (!student || !volunteer) return false;
-    try {
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({ student: tokens.student, volunteer: tokens.volunteer }),
-      );
-    } catch {
-      /* storage unavailable: the tokens still work until the page is reloaded */
-    }
-    this.identities.set({ student, volunteer });
-    this.mode.set('student');
-    return true;
+  /** Re-reads the login from storage. Changes nothing when it is the same person and token. */
+  refresh(): void {
+    const next = readLogin();
+    const current = this.identity();
+    if (next?.token === current?.token && next?.name === current?.name) return;
+    this.identity.set(next);
   }
 }

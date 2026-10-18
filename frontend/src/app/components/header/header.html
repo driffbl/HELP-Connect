@@ -9,6 +9,8 @@
     <a routerLink="/signup" *ngIf="!isLoggedIn">Register</a>
 
     <a routerLink="/dashboard" *ngIf="isLoggedIn">Dashboard</a>
+    <a routerLink="/sessions" *ngIf="isLoggedIn">My Sessions</a>
+    <a routerLink="/past-sessions" *ngIf="isLoggedIn">Past Sessions</a>
     <a routerLink="/volunteer/register" *ngIf="isLoggedIn">Volunteer</a>
     <a routerLink="/" *ngIf="isLoggedIn" (click)="logout()" class="logout-btn">
       Logout
