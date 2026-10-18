@@ -23,9 +23,10 @@ export interface IncomingRequest {
   styleUrls: ['./volunteer-inbox.css'],
 })
 export class VolunteerInbox implements OnInit {
+  currentUser = JSON.parse(localStorage.getItem('user') || '{}');
   pendingRequests: IncomingRequest[] = [];
   isLoading: boolean = false;
-  volunteerId: number = 10; // Current test volunteer ID
+  volunteerId: number = Number(this.currentUser.Volunteer_id || this.currentUser.User_id || 13);
 
   // Default fallback avatar if student has no profile picture
   defaultAvatar: string =

@@ -109,10 +109,13 @@ export class MatchingResults implements OnInit {
       return;
     }
 
+    const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+    const loggedInStudentId = Number(currentUser.User_id || currentUser.user_id || 1);
+    const loggedInStudentName = currentUser.User_name || 'Student';
     // Path B: Brand-new support request (Initial creation with chosen volunteer)
     const newRequestPayload = {
-      student_id: 1, // Current logged-in student ID
-      student_name: 'Wei Yang',
+      student_id: loggedInStudentId,
+      student_name: loggedInStudentName,
       volunteer_id: this.selectedVolunteer.volunteer_id,
       volunteer_name: this.selectedVolunteer.user_name,
       category: this.searchCategory as any,

@@ -26,7 +26,8 @@ export interface StudentRequestItem {
 export class StudentRequests implements OnInit {
   requests: StudentRequestItem[] = [];
   isLoading: boolean = false;
-  studentId: number = 1; // Default logged-in student user ID
+  currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+  studentId: number = Number(this.currentUser.User_id || this.currentUser.user_id || 1);
   currentSystemDate: Date = new Date();
 
   constructor(
@@ -36,6 +37,10 @@ export class StudentRequests implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    if (!this.currentUser || Object.keys(this.currentUser).length === 0) {
+      console.warn('No active login session found. Redirecting to login...');
+    }
+
     this.loadStudentRequests();
   }
 
@@ -84,18 +89,40 @@ export class StudentRequests implements OnInit {
   onChangeVolunteer(req: StudentRequestItem): void {
     const numericId = String(req.request_id).replace(/\D/g, '');
 
-    let cleanDate = req.preferred_date;
-    if (cleanDate && cleanDate.includes('T')) {
-      cleanDate = cleanDate.split('T')[0];
+    // 1. Convert any date format (ISO, DD/MM/YYYY, etc.) to strict YYYY-MM-DD
+    let standardDate = '';
+    if (req.preferred_date) {
+      if (req.preferred_date.includes('/')) {
+        // Handles "12/10/2026" (DD/MM/YYYY)
+        const parts = req.preferred_date.split('/');
+        standardDate = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+      } else if (req.preferred_date.includes('T')) {
+        // Handles ISO "2026-10-12T00:00:00.000Z"
+        standardDate = req.preferred_date.split('T')[0];
+      } else {
+        standardDate = req.preferred_date;
+      }
     }
 
-    // Passes existing parameters to matching results
+    // 2. Convert time to clean 24-hour HH:MM (strip AM/PM if present)
+    let standardTime = req.preferred_time || '11:30';
+    if (standardTime.toUpperCase().includes('AM') || standardTime.toUpperCase().includes('PM')) {
+      const isPM = standardTime.toUpperCase().includes('PM');
+      const clean = standardTime.replace(/(AM|PM|\s)/gi, '');
+      const [h, m] = clean.split(':');
+      let hourNum = parseInt(h, 10);
+      if (isPM && hourNum < 12) hourNum += 12;
+      if (!isPM && hourNum === 12) hourNum = 0;
+      standardTime = `${String(hourNum).padStart(2, '0')}:${m || '00'}`;
+    }
+
+    // 3. Navigate with pristine parameters
     this.router.navigate(['/matching-results'], {
       queryParams: {
         category: req.category,
         mode: req.support_mode,
-        date: cleanDate,
-        time: req.preferred_time,
+        date: standardDate, // e.g. "2026-10-12"
+        time: standardTime, // e.g. "11:30"
         requestId: numericId,
       },
     });
