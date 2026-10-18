@@ -17,6 +17,8 @@ export class RequestSupport implements OnInit {
   supportMode: string = '';
   selectedTime: string = '09:00';
 
+  editRequestId: number | null = null;
+
   currentYear: number = 2026;
   currentMonth: number = 9;
   currentMonthName: string = 'October';
@@ -41,6 +43,10 @@ export class RequestSupport implements OnInit {
       if (params['description']) this.description = params['description'];
       if (params['mode']) this.supportMode = params['mode'];
       if (params['time']) this.selectedTime = params['time'];
+
+      if (params['editRequestId']) {
+        this.editRequestId = Number(params['editRequestId']);
+      }
 
       if (params['date']) {
         const parsedDate = new Date(params['date'] + 'T00:00:00');
@@ -108,7 +114,13 @@ export class RequestSupport implements OnInit {
   }
 
   onGoBack(): void {
-    window.history.back();
+    // If the student is editing criteria for an existing request, return to their dashboard;
+    // otherwise, return cleanly to the Home landing page.
+    if (this.editRequestId) {
+      this.router.navigate(['/student-requests']);
+    } else {
+      this.router.navigate(['/']);
+    }
   }
 
   // Phase 1: Validates and forwards search criteria without inserting into MySQL

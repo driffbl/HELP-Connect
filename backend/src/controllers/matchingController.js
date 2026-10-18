@@ -52,8 +52,16 @@ exports.findVolunteers = async (req, res) => {
         // 2. Filter by Time Window in Minutes (e.g., "01:00" -> 60 minutes)
         let matched = volunteers;
         if (time) {
-            const timeParts = time.trim().split(':');
-            const reqMinutes = parseInt(timeParts[0], 10) * 60 + parseInt(timeParts[1], 10);
+            // Clean out any stray 'AM' or 'PM' strings
+            let cleanTime = time.trim();
+            let [hStr, mStr] = cleanTime.replace(/(AM|PM|\s)/gi, '').split(':');
+            let h = parseInt(hStr, 10);
+            let m = parseInt(mStr || '0', 10);
+
+            if (cleanTime.toUpperCase().includes('PM') && h < 12) h += 12;
+            if (cleanTime.toUpperCase().includes('AM') && h === 12) h = 0;
+
+            const reqMinutes = h * 60 + m;
 
             if (!isNaN(reqMinutes)) {
                 matched = volunteers.filter(vol => {
@@ -247,10 +255,12 @@ exports.getVolunteerInbox = async (req, res) => {
             FROM Support_request sr
                      JOIN Category c ON sr.Category_id = c.Category_id
                      JOIN User u ON sr.User_id = u.User_id
-            WHERE sr.Volunteer_id = ? AND sr.Request_status = 'Pending'
+                     LEFT JOIN Volunteer v ON sr.Volunteer_id = v.Volunteer_id
+            WHERE (sr.Volunteer_id = ? OR v.User_id = ?)
+              AND sr.Request_status = 'Pending'
             ORDER BY sr.created_at ASC
         `;
-        const [rows] = await db.query(query, [volunteerId]);
+        const [rows] = await db.query(query, [volunteerId, volunteerId]);
         res.json(rows);
     } catch (error) {
         console.error('Error fetching volunteer inbox:', error);
