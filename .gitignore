@@ -35,3 +35,4 @@ desktop.ini
 *.sqlite3
 backup_before_merge.sql
 frontend/angular.json
+frontend/angular.json
