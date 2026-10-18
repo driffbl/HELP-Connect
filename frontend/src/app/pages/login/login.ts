@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -16,31 +16,31 @@ export class Login {
   private router = inject(Router);
 
   form = { email: '', password: '' };
-  error = '';
-  loading = false;
+  
+  // 1. Change to signals
+  error = signal('');
+  loading = signal(false);
 
   onSubmit() {
-    this.error = '';
+    this.error.set('');
 
-    // ── Client-side validation ──
     if (!this.form.email.trim()) {
-      this.error = 'Please enter your email.';
+      this.error.set('Please enter your email.');
       return;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(this.form.email)) {
-      this.error = 'Please enter a valid email address.';
+      this.error.set('Please enter a valid email address.');
       return;
     }
 
     if (!this.form.password) {
-      this.error = 'Please enter your password.';
+      this.error.set('Please enter your password.');
       return;
     }
 
-    // ── Server request ──
-    this.loading = true;
+    this.loading.set(true);
 
     this.api.login(this.form).subscribe({
       next: () => {
@@ -49,22 +49,20 @@ export class Login {
       },
       error: (err: any) => {
         if (err.status === 0) {
-          this.error = 'Cannot reach server. Please check your connection.';
+          this.error.set('Cannot reach server. Please check your connection.');
         } else if (err.status === 401) {
-          this.error = 'Invalid email or password. Please try again.';
+          this.error.set('Invalid email or password. Please try again.');
         } else if (err.status === 403) {
-          this.error = 'Your account is not active. Please verify your email first.';
-        } else if (err.status === 500) {
-          this.error = 'Server error. Please try again in a moment.';
+          this.error.set('Your account is not active. Please verify your email first.');
         } else {
-          this.error = err.error?.message || 'Login failed. Please try again.';
+          this.error.set(err.error?.message || 'Login failed. Please try again.');
         }
-        this.loading = false;
+        this.loading.set(false); // 2. Notice the .set()
       },
     });
   }
 
   clearError() {
-    this.error = '';
+    this.error.set(''); // 3. Notice the .set()
   }
 }
