@@ -22,6 +22,9 @@ app.use('/api/auth', authRoutes);
 const profileRoutes = require('./routes/profileRoutes');
 app.use('/api/profile', profileRoutes);
 
+const matchingRoutes = require('./routes/matchingRoutes');
+app.use('/api/matching', matchingRoutes);
+
 const volunteerRoutes = require('./routes/volunteerRoutes');
 app.use('/api/volunteer', volunteerRoutes);
 

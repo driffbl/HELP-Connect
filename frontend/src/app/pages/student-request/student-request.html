@@ -1,0 +1,91 @@
+<!-- Full-width shared navigation header -->
+<app-header></app-header>
+
+<div class="uc2-page-container">
+  <main class="main-content">
+    <div class="dashboard-card">
+
+      <!-- Header with Go Back Button -->
+      <div class="card-header">
+        <button type="button" class="btn-back" (click)="onGoBack()">
+          <span class="arrow">&larr;</span> Go Back
+        </button>
+        <h1 class="page-title">My Student Sessions</h1>
+      </div>
+
+      <!-- Loading Placeholder -->
+      <div *ngIf="isLoading" class="loading-state">
+        <p>Loading your submitted requests...</p>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="!isLoading && requests.length === 0" class="empty-state">
+        <p>You have not submitted any support requests yet.</p>
+      </div>
+
+      <!-- Requests Feed matching recommended layout -->
+      <div class="requests-list" *ngIf="!isLoading && requests.length > 0">
+        <article *ngFor="let req of requests" class="session-card">
+
+          <!-- Top Strip: #ID on Left, Status on Right -->
+          <div class="card-top-strip">
+            <span class="request-id">#{{ req.request_id }}</span>
+            <span
+              class="request-status"
+              [ngClass]="{
+                'status-pending': req.status === 'Pending',
+                'status-accepted': req.status === 'Accepted',
+                'status-rejected': req.status === 'Rejected' || req.status === 'Cancelled'
+              }">
+              {{ req.status }}
+            </span>
+          </div>
+
+          <!-- Card Body Content -->
+          <div class="card-body">
+            <!-- Category Title -->
+            <h2 class="category-heading">{{ req.category }}</h2>
+
+            <!-- Description Section -->
+            <div class="description-block">
+              <span class="desc-label">Description</span>
+              <p class="desc-content">{{ req.description || 'No description provided.' }}</p>
+            </div>
+
+            <!-- Metadata List -->
+            <div class="meta-section">
+              <p class="meta-row">
+                <span class="meta-key">Preferred Date:</span>
+                <span class="meta-val">{{ formatDate(req.preferred_date) }}</span>
+              </p>
+              <p class="meta-row">
+                <span class="meta-key">Preferred Time:</span>
+                <span class="meta-val">{{ formatTime(req.preferred_time) }}</span>
+              </p>
+              <p class="meta-row">
+                <span class="meta-key">Support Mode:</span>
+                <span class="meta-val">{{ req.support_mode }}</span>
+              </p>
+              <p class="meta-row">
+                <span class="meta-key">Volunteer:</span>
+                <span class="meta-val">{{ req.volunteer_name || 'Unassigned' }}</span>
+              </p>
+            </div>
+
+            <!-- Centered Change Volunteer Button (Rejected or Stale Pending) -->
+            <div *ngIf="canChangeVolunteer(req)" class="card-actions-center">
+              <button
+                type="button"
+                class="btn-change-volunteer"
+                (click)="onChangeVolunteer(req)">
+                [ Change Volunteer ]
+              </button>
+            </div>
+          </div>
+
+        </article>
+      </div>
+
+    </div>
+  </main>
+</div>

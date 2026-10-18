@@ -1,0 +1,126 @@
+<!-- 1. Header sits outside the page container to span full browser width -->
+<app-header></app-header>
+
+<div class="uc2-page-container">
+  <main class="main-content">
+    <div class="form-card">
+
+      <!-- Top Sub-Bar -->
+      <div class="card-header">
+        <button type="button" class="btn-back" (click)="onGoBack()">
+          <span class="arrow">&larr;</span> Go Back
+        </button>
+        <h1 class="page-title">Support Request</h1>
+      </div>
+
+      <!-- Error / Validation Banner -->
+      <div *ngIf="errorMessage" class="alert-banner" role="alert">
+        {{ errorMessage }}
+      </div>
+
+      <form (ngSubmit)="onSubmit()" class="request-layout">
+
+        <!-- Left Column: Calendar & Time Picker (Fixed 340px) -->
+        <section class="picker-section">
+          <label class="section-label">Preferred Time and Date</label>
+
+          <div class="calendar-card">
+            <!-- Calendar Navigation -->
+            <div class="cal-nav">
+              <span class="cal-month-title">{{ currentMonthName }} {{ currentYear }}</span>
+              <div class="cal-arrows">
+                <button type="button" class="nav-arrow" (click)="prevMonth()">&lt;</button>
+                <button type="button" class="nav-arrow" (click)="nextMonth()">&gt;</button>
+              </div>
+            </div>
+
+            <!-- Calendar Days Header (Clean 7-Day Sunday-Saturday) -->
+            <div class="cal-grid weekdays">
+              <span>SUN</span><span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span>
+            </div>
+
+            <!-- Days Numbers -->
+            <div class="cal-grid days">
+              <button
+                type="button"
+                *ngFor="let day of calendarDays"
+                [disabled]="!day"
+                [class.empty]="!day"
+                [class.selected]="day === selectedDay"
+                [class.today]="day === currentDay && !selectedDay"
+                (click)="selectDay(day)">
+                {{ day || '' }}
+              </button>
+            </div>
+
+            <!-- Time Input Widget -->
+            <div class="time-widget">
+              <label for="timePicker">Time</label>
+              <input
+                id="timePicker"
+                type="time"
+                [(ngModel)]="selectedTime"
+                name="preferredTime"
+                class="time-input" />
+            </div>
+          </div>
+        </section>
+
+        <!-- Right Column: Form Inputs (1fr) -->
+        <section class="fields-section">
+          <!-- Support Category Dropdown -->
+          <div class="input-group">
+            <label for="categorySelect">Support Category</label>
+            <div class="select-wrapper">
+              <select
+                id="categorySelect"
+                [(ngModel)]="category"
+                name="category"
+                [class.invalid]="isSubmitted && !category">
+                <option value="" disabled selected>Choose your support category.</option>
+                <option value="Academic Support">Academic Support</option>
+                <option value="Technology Support">Technology Support</option>
+                <option value="New Student Support">New Student Support</option>
+                <option value="General Student Support">General Student Support</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Support Description Textarea -->
+          <div class="input-group">
+            <label for="descriptionInput">Support Description</label>
+            <textarea
+              id="descriptionInput"
+              [(ngModel)]="description"
+              name="description"
+              rows="5"
+              placeholder="Share details of the support you need here."
+              [class.invalid]="isSubmitted && (!description || description.trim().length < 5)"></textarea>
+          </div>
+
+          <!-- Support Mode Dropdown -->
+          <div class="input-group">
+            <label for="modeSelect">Support Mode</label>
+            <div class="select-wrapper">
+              <select
+                id="modeSelect"
+                [(ngModel)]="supportMode"
+                name="supportMode"
+                [class.invalid]="isSubmitted && !supportMode">
+                <option value="" disabled selected>Choose your preferred mode of support.</option>
+                <option value="Virtual">Virtual</option>
+                <option value="Face-to-Face">Face-to-Face</option>
+              </select>
+            </div>
+          </div>
+        </section>
+
+        <!-- Confirm Action Button -->
+        <div class="form-actions">
+          <button type="submit" class="btn-confirm">Confirm</button>
+        </div>
+
+      </form>
+    </div>
+  </main>
+</div>
