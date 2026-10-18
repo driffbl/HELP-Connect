@@ -6,8 +6,8 @@
     A code was sent to <strong>{{ email }}</strong>
   </p>
 
-  <div class="error" *ngIf="error">⚠️ {{ error }}</div>
-  <div class="success" *ngIf="success">✓ {{ success }}</div>
+  <div class="error" *ngIf="error()"> {{ error() }}</div>
+  <div class="success" *ngIf="success()">✓ {{ success() }}</div>
 
   <form (ngSubmit)="onSubmit()">
     <label>6-digit Verification Code</label>
@@ -21,8 +21,8 @@
       required
     />
 
-    <button type="submit" class="btn-primary" [disabled]="loading">
-      {{ loading ? 'Verifying...' : 'Confirm' }}
+    <button type="submit" class="btn-primary" [disabled]="loading()">
+      {{ loading() ? 'Verifying...' : 'Confirm' }}
     </button>
   </form>
 </div>

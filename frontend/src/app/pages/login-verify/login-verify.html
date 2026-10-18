@@ -6,7 +6,7 @@
     A code was sent to <strong>{{ email }}</strong>
   </p>
 
-  <div class="error" *ngIf="error">{{ error }}</div>
+  <div class="error" *ngIf="error()">⚠️ {{ error() }}</div>
 
   <form (ngSubmit)="onSubmit()">
     <label>Login Code</label>
@@ -14,13 +14,14 @@
       type="text"
       name="code"
       [(ngModel)]="code"
+      (input)="clearError()"
       placeholder="Enter 6-digit code"
       maxlength="6"
       required
     />
 
-    <button type="submit" class="btn-primary" [disabled]="loading">
-      {{ loading ? 'Verifying...' : 'Confirm' }}
+    <button type="submit" class="btn-primary" [disabled]="loading()">
+      {{ loading() ? 'Verifying...' : 'Confirm' }}
     </button>
   </form>
 </div>
