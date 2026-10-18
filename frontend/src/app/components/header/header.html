@@ -1,0 +1,17 @@
+<div class="topbar">
+  <div class="brand">
+    <a routerLink="/">HELP Connect</a>
+  </div>
+
+  <div class="nav-links">
+    <a routerLink="/" *ngIf="!isLoggedIn">Home</a>
+    <a routerLink="/login" *ngIf="!isLoggedIn">Sign In</a>
+    <a routerLink="/signup" *ngIf="!isLoggedIn">Register</a>
+
+    <a routerLink="/dashboard" *ngIf="isLoggedIn">Dashboard</a>
+    <a routerLink="/volunteer/register" *ngIf="isLoggedIn">Volunteer</a>
+    <a routerLink="/" *ngIf="isLoggedIn" (click)="logout()" class="logout-btn">
+      Logout
+    </a>
+  </div>
+</div>

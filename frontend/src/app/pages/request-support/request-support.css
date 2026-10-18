@@ -1,0 +1,317 @@
+:host {
+  display: block;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: #333333;
+  background-color: #f7f9fa;
+  min-height: 100vh;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Page Frame: Centers content without squeezing inner grids */
+.uc2-page-container {
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.main-content {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 32px 20px 48px;
+  box-sizing: border-box;
+}
+
+/* Form Card */
+.form-card {
+  width: 100%;
+  max-width: 900px;
+  background: #ffffff;
+  border: 1.5px solid #ff4d4d;
+  border-radius: 8px;
+  padding: 28px 36px 36px;
+  box-sizing: border-box;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+}
+
+/* Header & Back Button Alignment */
+.card-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+  width: 100%;
+}
+
+.btn-back {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent !important;
+  border: none !important;
+  color: #ff4d4d;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 !important;
+  width: auto !important;
+  box-shadow: none !important;
+}
+
+.btn-back:hover {
+  text-decoration: underline;
+}
+
+.page-title {
+  color: #ff4d4d;
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+/* Fixed left calendar width prevents right inputs from causing layout shifts */
+.request-layout {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  column-gap: 40px;
+  row-gap: 24px;
+  align-items: start;
+}
+
+/* Section Labels */
+.section-label {
+  display: block;
+  color: #ff4d4d;
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: 8px;
+}
+
+/* Calendar Card */
+.calendar-card {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+  border: 1px solid #eef0f2;
+  padding: 16px;
+  width: 100%;
+  max-width: 340px;
+  box-sizing: border-box;
+}
+
+.cal-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.cal-month-title {
+  font-weight: 700;
+  color: #2b3a4a;
+  font-size: 0.9rem;
+}
+
+.cal-arrows {
+  display: flex;
+  gap: 4px;
+}
+
+.cal-arrows button {
+  width: auto !important;
+  background: none !important;
+  border: none !important;
+  color: #555;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 4px 8px !important;
+  box-shadow: none !important;
+}
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  gap: 4px;
+}
+
+.weekdays span {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #9aa0a6;
+  padding-bottom: 6px;
+}
+
+.days button {
+  width: 32px !important;
+  height: 32px !important;
+  padding: 0 !important;
+  background: none !important;
+  border: none !important;
+  font-size: 0.8rem;
+  border-radius: 50% !important;
+  cursor: pointer;
+  color: #2b3a4a;
+  box-shadow: none !important;
+  margin: 0 auto;
+}
+
+.days button.empty {
+  visibility: hidden;
+}
+
+.days button:hover:not([disabled]) {
+  background-color: #f1f3f4 !important;
+}
+
+.days button.selected {
+  background-color: #1e293b !important;
+  color: #ffffff !important;
+  font-weight: bold;
+}
+
+.days button.today:not(.selected) {
+  border: 1px solid #ff4d4d !important;
+  color: #ff4d4d;
+}
+
+.time-widget {
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px solid #edf0f2;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  color: #4b5563;
+}
+
+.time-input {
+  width: auto !important;
+  margin-bottom: 0 !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 6px !important;
+  padding: 4px 8px !important;
+  font-size: 0.85rem;
+  background-color: #f8fafc;
+}
+
+/* Fields Section (Right Column) */
+.fields-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.input-group {
+  width: 100%;
+}
+
+.input-group label {
+  display: block;
+  width: 100%;
+  color: #ff4d4d;
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: 6px;
+}
+
+.select-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+/* Form Controls: Force width to override global rules from main */
+select,
+textarea {
+  width: 100% !important;
+  border: 1.5px solid #ff8080 !important;
+  border-radius: 8px !important;
+  padding: 10px 14px !important;
+  font-size: 0.9rem !important;
+  box-sizing: border-box !important;
+  outline: none;
+  background-color: #ffffff;
+  color: #333333;
+  margin-bottom: 0 !important;
+}
+
+select {
+  appearance: none;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml;utf8,<svg fill='%23777' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 10px center !important;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 110px;
+  line-height: 1.4;
+}
+
+select:focus,
+textarea:focus,
+.time-input:focus {
+  border-color: #ff4d4d !important;
+  box-shadow: 0 0 0 2px rgba(255, 77, 77, 0.2) !important;
+}
+
+.invalid {
+  border-color: #d32f2f !important;
+  background-color: #fff8f8;
+}
+
+/* Actions */
+.form-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: center;
+  margin-top: 12px;
+}
+
+.btn-confirm {
+  width: auto !important;
+  background-color: #ff4d4d !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 12px 64px !important;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(255, 77, 77, 0.35) !important;
+  transition: background-color 0.15s ease-in-out;
+}
+
+.btn-confirm:hover {
+  background-color: #e63939 !important;
+}
+
+.alert-banner {
+  background-color: #ffebee;
+  color: #c62828;
+  padding: 10px 16px;
+  border-radius: 6px;
+  margin-bottom: 18px;
+  font-size: 0.88rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+/* Responsive adjustment for small viewports */
+@media (max-width: 768px) {
+  .request-layout {
+    grid-template-columns: 1fr;
+  }
+  .calendar-card {
+    max-width: 100%;
+  }
+}

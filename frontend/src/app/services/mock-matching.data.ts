@@ -1,0 +1,72 @@
+import { Volunteer } from '../../app/models/volunteer.model';
+import { SupportRequest } from '../../app/models/support-request.model';
+
+export const MOCK_VOLUNTEERS: Volunteer[] = [
+  {
+    volunteer_id: 101,
+    user_id: 201,
+    user_name: 'Alex Tan',
+    support_category: 'Academic Support',
+    skills_description: 'Data Structures, Java Algorithms, Discrete Math',
+    preferred_mode: 'Virtual',
+    availability_notes: 'Monday / Wednesday 14:00 - 16:00',
+    is_active: true,
+    rating: 4.9,
+    completed_sessions: 14,
+  },
+  {
+    volunteer_id: 102,
+    user_id: 202,
+    user_name: 'Sarah Lee',
+    support_category: 'Technology Support',
+    skills_description: 'Git, Linux CLI, Node.js, MySQL Configuration',
+    preferred_mode: 'Both',
+    availability_notes: 'Tuesday / Thursday 10:00 - 12:00',
+    is_active: true,
+    rating: 4.7,
+    completed_sessions: 8,
+  },
+  {
+    volunteer_id: 103,
+    user_id: 203,
+    user_name: 'Marcus Wong',
+    support_category: 'Academic Support',
+    skills_description: 'Software Engineering Principles, UML & ERD diagrams',
+    preferred_mode: 'Face-to-Face',
+    availability_notes: 'Friday 15:00 - 17:00',
+    is_active: true,
+    rating: 4.5,
+    completed_sessions: 5,
+  },
+];
+
+export const MOCK_REQUESTS: SupportRequest[] = [
+  {
+    request_id: 1,
+    student_id: 301,
+    student_name: 'Ali',
+    volunteer_id: 101,
+    volunteer_name: 'Alex Tan',
+    category: 'Academic Support',
+    description: 'Need assistance understanding BDD Given-When-Then criteria structure.',
+    preferred_date: '2026-10-15',
+    preferred_time: '14:00 - 16:00',
+    support_mode: 'Virtual',
+    status: 'Pending',
+    created_at: '2026-10-09 10:30:00',
+  },
+  {
+    request_id: 2,
+    student_id: 301,
+    student_name: 'Ali',
+    volunteer_id: 102,
+    volunteer_name: 'Sarah Lee',
+    category: 'Technology Support',
+    description: 'Help setting up MySQL workbench connection pool in Express.',
+    preferred_date: '2026-10-12',
+    preferred_time: '10:00 - 12:00',
+    support_mode: 'Virtual',
+    status: 'Accepted',
+    created_at: '2026-10-08 09:15:00',
+  },
+];

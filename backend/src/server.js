@@ -22,7 +22,13 @@ app.use('/api/auth', authRoutes);
 const profileRoutes = require('./routes/profileRoutes');
 app.use('/api/profile', profileRoutes);
 
-const usecase3Routes = require('./routes/usecase3Routes');
+const matchingRoutes = require('./routes/matchingRoutes');
+app.use('/api/matching', matchingRoutes);
+
+const volunteerRoutes = require('./routes/volunteerRoutes');
+app.use('/api/volunteer', volunteerRoutes);
+
+const usecase3Routes = require('./routes/usecase3Routes');   
 app.use('/api', usecase3Routes);
 
 const PORT = process.env.PORT || 5000;

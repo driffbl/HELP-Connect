@@ -1,1 +1,30 @@
-<p>dashboard works!</p>
+<app-header></app-header>
+
+<div class="page-container" style="max-width: 720px;">
+  <h1>Welcome, {{ userName }}!</h1>
+  <p style="text-align: center; color: #666; margin-bottom: 32px;">
+    {{ userEmail }}
+  </p>
+
+  <div class="success">You are signed in.</div>
+
+  <div class="dashboard-grid">
+    <a routerLink="/volunteer/register" class="dash-card">
+      <div class="dash-icon">🤝</div>
+      <h3>Become a Volunteer</h3>
+      <p>Share your skills with other students</p>
+    </a>
+
+    <a routerLink="/volunteer/profile" class="dash-card">
+      <div class="dash-icon">👤</div>
+      <h3>My Volunteer Profile</h3>
+      <p>View or edit your volunteer info</p>
+    </a>
+
+    <a routerLink="/" class="dash-card">
+      <div class="dash-icon">🏠</div>
+      <h3>Home</h3>
+      <p>Back to the main page</p>
+    </a>
+  </div>
+</div>

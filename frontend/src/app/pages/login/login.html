@@ -1,1 +1,39 @@
-<p>login works!</p>
+<app-header></app-header>
+
+<div class="page-container">
+  <h1>Sign In</h1>
+
+  <!-- 1. Add () to error -->
+  <div class="error" *ngIf="error()">⚠️ {{ error() }}</div>
+
+  <form (ngSubmit)="onSubmit()">
+    <label>Email</label>
+    <input
+      type="email"
+      name="email"
+      [(ngModel)]="form.email"
+      (input)="clearError()"
+      placeholder="you@help.edu.my"
+      required
+    />
+
+    <label>Password</label>
+    <input
+      type="password"
+      name="password"
+      [(ngModel)]="form.password"
+      (input)="clearError()"
+      placeholder="Your password"
+      required
+    />
+
+    <!-- 2. Add () to loading -->
+    <button type="submit" class="btn-primary" [disabled]="loading()">
+      {{ loading() ? 'Signing in...' : 'Sign In' }}
+    </button>
+  </form>
+
+  <div class="link">
+    Don't have an account? <a routerLink="/signup">Register</a>
+  </div>
+</div>

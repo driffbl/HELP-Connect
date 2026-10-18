@@ -1,0 +1,35 @@
+.profile-field {
+  margin-bottom: 20px;
+}
+
+.profile-field label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #999;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.profile-field p {
+  font-size: 15px;
+  color: #333;
+  margin-top: 4px;
+}
+
+.category-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.category-tag {
+  padding: 6px 14px;
+  background: #e63946;
+  color: white;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+}

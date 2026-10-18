@@ -1,1 +1,28 @@
-<p>verify works!</p>
+<app-header></app-header>
+
+<div class="page-container">
+  <h1>Two-factor Authentication</h1>
+  <p style="text-align: center; color: #666; margin-bottom: 24px;">
+    A code was sent to <strong>{{ email }}</strong>
+  </p>
+
+  <div class="error" *ngIf="error()"> {{ error() }}</div>
+  <div class="success" *ngIf="success()">✓ {{ success() }}</div>
+
+  <form (ngSubmit)="onSubmit()">
+    <label>6-digit Verification Code</label>
+    <input
+      type="text"
+      name="code"
+      [(ngModel)]="code"
+      (input)="clearError()"
+      placeholder="Enter 6-digit code"
+      maxlength="6"
+      required
+    />
+
+    <button type="submit" class="btn-primary" [disabled]="loading()">
+      {{ loading() ? 'Verifying...' : 'Confirm' }}
+    </button>
+  </form>
+</div>
