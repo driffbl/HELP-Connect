@@ -1,7 +1,7 @@
 import { Component, computed, effect, inject, untracked } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import { AuthNotice } from '../../components/auth-notice/auth-notice';
 import { Panel } from '../../components/panel/panel';
+import { SessionActions } from '../../components/session-actions/session-actions';
 import { SessionCard } from '../../components/session-card/session-card';
 import { Clock } from '../../services/clock';
 import { CurrentUser } from '../../services/current-user';
@@ -10,7 +10,7 @@ import { sessionDetails, sessionRef } from '../../utils/session-format';
 import { effectiveStatus } from '../../utils/session-rules';
 
 @Component({
-  imports: [RouterLink, AuthNotice, Panel, SessionCard],
+  imports: [AuthNotice, Panel, SessionActions, SessionCard],
   selector: 'app-my-sessions',
   styleUrl: './my-sessions.css',
   templateUrl: './my-sessions.html',
@@ -24,13 +24,15 @@ export class MySessions {
   protected readonly status = this.store.status;
   protected readonly error = this.store.error;
 
+  protected readonly role = computed(() => this.auth.user().role);
+
   protected readonly pageTitle = computed(() =>
     this.auth.user().role === 'student' ? 'My Student Sessions' : 'My Volunteer Sessions',
   );
 
   protected readonly rows = computed(() => {
     const now = this.clock.now();
-    const role = this.auth.user().role;
+    const role = this.role();
     return this.store.activeSessions().map((session) => ({
       session,
       ref: sessionRef(session.id),

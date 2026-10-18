@@ -1,4 +1,4 @@
-<app-panel [title]="pageTitle()">
+<app-panel [title]="pageTitle()" [roleSwitch]="true">
   @if (!signedIn()) {
     <app-auth-notice />
   } @else {
@@ -11,19 +11,15 @@
 
     @if (rows().length > 0) {
       @for (r of rows(); track r.session.id) {
-        <a
-          class="link"
-          [routerLink]="['/sessions', r.session.id]"
+        <app-session-card
+          [ref]="r.ref"
+          [category]="r.session.category"
+          [details]="r.details"
+          [status]="r.status"
           [attr.data-testid]="'session-' + r.session.id"
         >
-          <app-session-card
-            [ref]="r.ref"
-            [category]="r.session.category"
-            [title]="r.session.title"
-            [details]="r.details"
-            [status]="r.status"
-          />
-        </a>
+          <app-session-actions [session]="r.session" [role]="role()" />
+        </app-session-card>
       }
     } @else if (status() === 'ready') {
       <p class="empty" data-testid="no-sessions">No sessions found</p>

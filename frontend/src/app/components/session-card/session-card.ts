@@ -1,33 +1,37 @@
 import { Component, input } from '@angular/core';
 import { SessionStatus } from '../../models/session.model';
+import { Detail } from '../../utils/session-format';
 import { StatusBadge } from '../status-badge/status-badge';
 
 /**
- * The request card from the wireframes: red strip (id + category), title, small grey lines and a status.
- * Anything placed inside the tag shows under the title row. Content marked `aside` replaces the status on the right.
+ * The session card, laid out like the request card on the Student Requests page: a strip with the id on
+ * the left, the category as the title in the middle and the status on the right. Below it, the details
+ * sit on the left. Whatever is placed inside the tag goes in the box on the right, which changes with
+ * the status (see SessionActions). It has no frame of its own.
  */
 @Component({
   selector: 'app-session-card',
   imports: [StatusBadge],
   template: `
     <article class="request-card">
-      <div class="top">
-        <span>{{ ref() }}</span
-        ><span>#{{ category() }}</span>
+      <div class="strip">
+        <span class="ref">#{{ ref() }}</span>
+        <h2>{{ category() }}</h2>
+        @if (status(); as st) {
+          <app-status-badge class="state" [status]="st" />
+        }
       </div>
       <div class="body">
-        <div class="info">
-          <h2>{{ title() }}</h2>
-          @for (line of details(); track line) {
-            <small>{{ line }}</small>
+        <dl class="rows">
+          @for (d of details(); track d.label) {
+            <div class="row">
+              <dt>{{ d.label }}:</dt>
+              <dd>{{ d.value }}</dd>
+            </div>
           }
-        </div>
-        @if (status(); as st) {
-          <app-status-badge [status]="st" />
-        }
-        <ng-content select="[aside]" />
+        </dl>
+        <div class="side"><ng-content /></div>
       </div>
-      <ng-content />
     </article>
   `,
   styles: [
@@ -36,38 +40,73 @@ import { StatusBadge } from '../status-badge/status-badge';
         margin-bottom: 16px;
         overflow: hidden;
         background: #fff;
-        border: 1px solid #d9d9d9;
-        border-radius: 6px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.18);
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
       }
-      .top {
-        display: flex;
-        justify-content: space-between;
-        padding: 3px 14px;
-        background: var(--brand, #ff5252);
-        color: #fff;
-        font-size: 0.8rem;
+      .strip {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 24px;
+        background: #f8fafc;
+        border-bottom: 1px solid #e5e7eb;
+      }
+      .ref {
+        color: #111827;
+        font-size: 1.2rem;
         font-weight: 700;
       }
-      .body {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
-        padding: 14px 26px;
-      }
       h2 {
-        margin: 0 0 4px;
-        color: var(--title-ink, #1f2a8a);
-        font-size: 1.5rem;
+        margin: 0;
+        color: #111827;
+        font-size: 1.6rem;
+        font-weight: 700;
+        text-align: center;
+      }
+      .state {
+        justify-self: end;
+      }
+      .body {
+        display: grid;
+        grid-template-columns: 1fr minmax(220px, 300px);
+        gap: 24px;
+        align-items: start;
+        padding: 20px 24px;
+      }
+      .rows {
+        margin: 0;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: minmax(110px, 150px) 1fr;
+        gap: 12px;
+        margin-bottom: 10px;
+      }
+      dt {
+        color: #374151;
         font-weight: 600;
       }
-      small {
-        display: block;
-        color: var(--muted-ink, #6b6b6b);
-        font-size: 0.75rem;
-        font-weight: 600;
+      dd {
+        margin: 0;
+        color: #4b5563;
+        overflow-wrap: anywhere;
+      }
+      .side {
+        align-self: center;
+      }
+      @media (max-width: 640px) {
+        .strip {
+          grid-template-columns: 1fr;
+          justify-items: center;
+        }
+        .state {
+          justify-self: center;
+        }
+        .body {
+          grid-template-columns: 1fr;
+        }
       }
     `,
   ],
@@ -75,7 +114,6 @@ import { StatusBadge } from '../status-badge/status-badge';
 export class SessionCard {
   readonly ref = input.required<string>();
   readonly category = input.required<string>();
-  readonly title = input.required<string>();
-  readonly details = input<string[]>([]);
+  readonly details = input<Detail[]>([]);
   readonly status = input<SessionStatus | null>(null);
 }

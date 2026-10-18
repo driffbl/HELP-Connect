@@ -1,61 +1,3 @@
-.notice {
-  margin: 0 0 12px;
-  padding: 10px 14px;
-  border: 1px solid var(--status-scheduled, #16a34a);
-  border-radius: 6px;
-  background: #ecfdf0;
-  color: #14532d;
-  font-weight: 600;
-}
-.review {
-  padding: 0 26px 10px;
-}
-.review h3 {
-  margin: 0;
-  font-size: 1rem;
-  color: var(--title-ink, #1f2a8a);
-}
-.review p {
-  margin: 4px 0 0;
-  color: #333;
-}
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-  padding: 0 26px 14px;
-}
-.action-btn {
-  display: inline-block;
-  padding: 5px 12px;
-  border: 1px solid var(--brand, #ff5252);
-  border-radius: 6px;
-  background: #fff;
-  color: var(--brand, #ff5252);
-  font-weight: 600;
-  text-decoration: none;
-  cursor: pointer;
-}
-.action-btn:hover:not(:disabled) {
-  background: var(--brand, #ff5252);
-  color: #fff;
-}
-.action-btn:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-.action-btn:focus-visible {
-  outline: 3px solid var(--title-ink, #1f2a8a);
-  outline-offset: 2px;
-}
-.hint {
-  flex-basis: 100%;
-  text-align: right;
-  color: var(--muted-ink, #6b6b6b);
-  font-size: 0.75rem;
-}
 .empty {
   text-align: center;
   color: var(--muted-ink, #6b6b6b);
@@ -69,10 +11,10 @@
 }
 .state button {
   padding: 4px 12px;
-  border: 1px solid var(--brand, #ff5252);
+  border: 1px solid var(--brand, #e63946);
   border-radius: 6px;
   background: #fff;
-  color: var(--brand, #ff5252);
+  color: var(--brand, #e63946);
   font-weight: 600;
   cursor: pointer;
 }

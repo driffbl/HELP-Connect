@@ -1,8 +1,8 @@
 import { DecimalPipe } from '@angular/common';
 import { Component, computed, effect, inject, untracked } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import { AuthNotice } from '../../components/auth-notice/auth-notice';
 import { Panel } from '../../components/panel/panel';
+import { SessionActions } from '../../components/session-actions/session-actions';
 import { SessionCard } from '../../components/session-card/session-card';
 import { StarRating } from '../../components/star-rating/star-rating';
 import { CurrentUser } from '../../services/current-user';
@@ -14,7 +14,7 @@ import { sessionDetails, sessionRef } from '../../utils/session-format';
  * Volunteers also see their average rating. Students see the feedback they submitted.
  */
 @Component({
-  imports: [DecimalPipe, RouterLink, AuthNotice, Panel, SessionCard, StarRating],
+  imports: [DecimalPipe, AuthNotice, Panel, SessionActions, SessionCard, StarRating],
   selector: 'app-past-sessions',
   styleUrl: './past-sessions.css',
   templateUrl: './past-sessions.html',

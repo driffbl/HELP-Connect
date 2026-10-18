@@ -1,4 +1,4 @@
-<app-panel title="Rate Your Volunteer" [backLink]="'/sessions/' + id">
+<app-panel title="Rate Your Volunteer" backLink="/sessions">
   @if (!signedIn()) {
     <app-auth-notice />
   } @else if (submitted()) {
@@ -17,7 +17,7 @@
       <p class="blocked" data-testid="review-blocked">{{ reason }}</p>
     } @else {
       <section class="form" data-testid="review-form">
-        <h2>{{ s.title }}</h2>
+        <h2>{{ s.category }}</h2>
         <p class="meta">Session with {{ s.volunteerName }} on {{ sessionDate() }}</p>
 
         <p class="label">Your rating (required)</p>

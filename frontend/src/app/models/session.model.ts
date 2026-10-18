@@ -9,6 +9,7 @@ export interface Session {
   volunteerId: number;
   volunteerName: string;
   title: string;
+  description: string | null; // what the student asked for help with
   category: string;
   date: string; // 'YYYY-MM-DD'
   time: string; // 'HH:mm'

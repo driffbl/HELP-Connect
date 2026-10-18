@@ -8,22 +8,21 @@ import { SessionStatus } from '../../models/session.model';
   }}</span>`,
   styles: [
     `
-      .status {
-        font-weight: 700;
+      .badge {
         font-size: 1.1rem;
-        white-space: nowrap;
+        font-weight: 700;
       }
       .pending {
-        color: var(--status-pending, #b7791f);
+        color: #d97706;
       }
       .scheduled {
-        color: var(--status-scheduled, #16a34a);
+        color: #15803d;
       }
       .completed {
-        color: var(--status-completed, #2563eb);
+        color: #1d4ed8;
       }
       .cancelled {
-        color: var(--status-cancelled, #dc2626);
+        color: #b91c1c;
       }
     `,
   ],

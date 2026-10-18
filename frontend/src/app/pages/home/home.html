@@ -29,36 +29,34 @@
   </p>
 
   <div class="action-list">
-    <!-- Unlinked: Shows an alert -->
-    <button type="button" class="btn-primary" style="margin-bottom: 12px;" routerLink="/request-support">
+    <!-- LINKED TO WEI YANG'S PAGE -->
+    <button type="button" class="btn-primary" routerLink="/request-support" style="margin-bottom: 12px;">
       I would like to request support
     </button>
-
-    <!-- Unlinked: Shows an alert -->
-    <button type="button" class="btn-primary" style="margin-bottom: 12px;" routerLink="/student-requests">
+    
+    <!-- LINKED TO WEI YANG'S PAGE -->
+    <button type="button" class="btn-primary" routerLink="/student-requests" style="margin-bottom: 12px;">
       I would like to check on My Sessions
     </button>
-
-    <!-- Linked: Goes to volunteer page -->
-    <button type="button" class="btn-primary" routerLink="/volunteer/register">
-      I would like to volunteer
+    
+    <!-- YOUR VOLUNTEER BUTTON -->
+    <button type="button" class="btn-primary" (click)="onVolunteerClick()" style="margin-bottom: 12px;">
+      {{ isVolunteer() ? 'View My Volunteer Profile' : 'I would like to become a volunteer' }}
     </button>
   </div>
 
   <div class="quick-links">
-    <a routerLink="/volunteer-inbox" class="quick-card">
-      <div class="quick-icon">📥</div>
-      <div class="quick-label">Volunteer Inbox</div>
-    </a>
-
-    <!-- Linked: Goes to dashboard -->
+    <button type="button" class="quick-card" (click)="showComingSoon()">
+      <div class="quick-icon">👥</div>
+      <div class="quick-label">Browse Volunteers</div>
+    </button>
+    
     <a routerLink="/dashboard" class="quick-card">
       <div class="quick-icon">👤</div>
       <div class="quick-label">Profile</div>
     </a>
-
-    <!-- Unlinked -->
-    <button type="button" class="quick-card" (click)="showComingSoon()">
+    
+    <button type="button" class="quick-card" routerLink="/past-sessions">
       <div class="quick-icon">⏱</div>
       <div class="quick-label">Past Sessions</div>
     </button>

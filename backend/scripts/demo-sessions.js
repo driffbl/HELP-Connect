@@ -33,14 +33,14 @@ const daysAgo = (n) => new Date(Date.now() - n * 86400000);
 
 // start = when the session is (or was) due; created = when the student asked for it.
 const DEMO = [
-  { title: 'Python Tutoring', category: 'Academic Support', start: inMinutes(2 * 1440), mode: 'Virtual', status: 'Pending', proposedBy: 'student', created: daysAgo(1) },
-  { title: 'Laptop Setup Help', category: 'Technology Support', start: inMinutes(1440), mode: 'Face-to-Face', status: 'Scheduled', proposedBy: null, created: daysAgo(3) },
-  { title: 'CV Review', category: 'Career Guidance', start: inMinutes(-60), mode: 'Virtual', status: 'Scheduled', proposedBy: null, created: daysAgo(4) }, // already started: the volunteer can complete it
-  { title: 'Cloud Computing Tutoring', category: 'Academic Support', start: inMinutes(-3 * 1440), mode: 'Virtual', status: 'Completed', proposedBy: null, created: daysAgo(8), review: { rating: 5, comment: 'Very clear explanations.' } },
-  { title: 'Stress Management Chat', category: 'Wellbeing', start: inMinutes(-2 * 1440), mode: 'Virtual', status: 'Cancelled', proposedBy: null, created: daysAgo(9) },
-  { title: 'Wi-Fi Troubleshooting', category: 'Technology Support', start: inMinutes(-90), mode: 'Virtual', status: 'Pending', proposedBy: 'student', created: daysAgo(2) }, // nobody answered in time: the server cancels it on the first load
-  { title: 'Java Debugging', category: 'Academic Support', start: inMinutes(-1440), mode: 'Virtual', status: 'Completed', proposedBy: null, created: daysAgo(5) }, // completed, no feedback yet: the student can rate it
-  { title: 'Resume Workshop', category: 'Career Guidance', start: inMinutes(-6 * 1440), mode: 'Face-to-Face', status: 'Completed', proposedBy: null, created: daysAgo(12), review: { rating: 4, comment: null } },
+  { title: 'Python Tutoring', description: 'Need help understanding loops and functions in Python.', category: 'Academic Support', start: inMinutes(2 * 1440), mode: 'Virtual', status: 'Pending', proposedBy: 'student', created: daysAgo(1) },
+  { title: 'Laptop Setup Help', description: 'My new laptop will not connect to the campus Wi-Fi.', category: 'Technology Support', start: inMinutes(1440), mode: 'Face-to-Face', status: 'Scheduled', proposedBy: null, created: daysAgo(3) },
+  { title: 'CV Review', description: 'Please review my CV before the internship applications.', category: 'Career Guidance', start: inMinutes(-60), mode: 'Virtual', status: 'Scheduled', proposedBy: null, created: daysAgo(4) }, // already started: the volunteer can complete it
+  { title: 'Cloud Computing Tutoring', description: 'Revision for the cloud computing assignment.', category: 'Academic Support', start: inMinutes(-3 * 1440), mode: 'Virtual', status: 'Completed', proposedBy: null, created: daysAgo(8), review: { rating: 5, comment: 'Very clear explanations.' } },
+  { title: 'Stress Management Chat', description: 'Feeling overwhelmed with exam preparation.', category: 'Wellbeing', start: inMinutes(-2 * 1440), mode: 'Virtual', status: 'Cancelled', proposedBy: null, created: daysAgo(9) },
+  { title: 'Wi-Fi Troubleshooting', description: 'Wi-Fi keeps dropping in the hostel.', category: 'Technology Support', start: inMinutes(-90), mode: 'Virtual', status: 'Pending', proposedBy: 'student', created: daysAgo(2) }, // nobody answered in time: the server cancels it on the first load
+  { title: 'Java Debugging', description: 'My program throws a NullPointerException.', category: 'Academic Support', start: inMinutes(-1440), mode: 'Virtual', status: 'Completed', proposedBy: null, created: daysAgo(5) }, // completed, no feedback yet: the student can rate it
+  { title: 'Resume Workshop', description: 'Learn how to structure a one-page resume.', category: 'Career Guidance', start: inMinutes(-6 * 1440), mode: 'Face-to-Face', status: 'Completed', proposedBy: null, created: daysAgo(12), review: { rating: 4, comment: null } },
 ];
 
 async function main() {
@@ -59,10 +59,10 @@ async function main() {
   for (const d of DEMO) {
     const [result] = await db.query(
       `INSERT INTO Support_session
-         (Student_user_id, Volunteer_user_id, Title, Category, Session_date, Session_time,
+         (Student_user_id, Volunteer_user_id, Title, Description, Category, Session_date, Session_time,
           Support_mode, Session_status, Proposed_by, Created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [ids.student, ids.volunteer, d.title, d.category, sqlDate(d.start), sqlTime(d.start), d.mode, d.status, d.proposedBy, sqlStamp(d.created)]
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [ids.student, ids.volunteer, d.title, d.description, d.category, sqlDate(d.start), sqlTime(d.start), d.mode, d.status, d.proposedBy, sqlStamp(d.created)]
     );
     if (d.review) {
       await db.query('INSERT INTO Feedback (Session_id, Rating, Comments, Created_at) VALUES (?, ?, ?, ?)', [

@@ -30,7 +30,7 @@ function assertWellFormed(call) {
 
 const row = {
   Session_id: 7, Student_user_id: 1, Student_name: 'Sam', Volunteer_user_id: 2, Volunteer_name: 'Vera',
-  Title: 'Python Tutoring', Category: 'Academic Support', Session_date: '2026-10-22', Session_time: '10:00',
+  Title: 'Python Tutoring', Description: 'Help with loops and functions.', Category: 'Academic Support', Session_date: '2026-10-22', Session_time: '10:00',
   Support_mode: 'Virtual', Session_status: 'Pending', Proposed_by: 'student',
   Created_at: new Date('2026-10-20T01:00:00Z'), Feedback_id: null, Rating: null, Comments: null, Feedback_created_at: null,
 };
@@ -38,9 +38,14 @@ const row = {
 test('toSession maps a row to the shape the Angular app uses', () => {
   assert.deepEqual(sessions.toSession(row), {
     id: 7, studentId: 1, studentName: 'Sam', volunteerId: 2, volunteerName: 'Vera',
-    title: 'Python Tutoring', category: 'Academic Support', date: '2026-10-22', time: '10:00',
+    title: 'Python Tutoring', description: 'Help with loops and functions.', category: 'Academic Support', date: '2026-10-22', time: '10:00',
     mode: 'Virtual', status: 'Pending', proposedBy: 'student', createdAt: '2026-10-20T01:00:00.000Z', review: null,
   });
+});
+
+test('toSession gives a null description when the row has none', () => {
+  assert.equal(sessions.toSession({ ...row, Description: null }).description, null);
+  assert.equal(sessions.toSession({ ...row, Description: undefined }).description, null);
 });
 
 test('toSession includes the review when there is one, including a null comment', () => {

@@ -63,8 +63,8 @@ import { Component, input, output } from '@angular/core';
         cursor: pointer;
       }
       .confirm {
-        background: var(--brand, #ff5252);
-        border-color: var(--brand, #ff5252);
+        background: var(--brand, #e63946);
+        border-color: var(--brand, #e63946);
         color: #fff;
         font-weight: 600;
       }

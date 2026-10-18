@@ -7,7 +7,7 @@
 const SELECT_SESSION = `
   SELECT s.Session_id, s.Student_user_id, su.User_name AS Student_name,
          s.Volunteer_user_id, vu.User_name AS Volunteer_name,
-         s.Title, s.Category,
+         s.Title, s.Description, s.Category,
          DATE_FORMAT(s.Session_date, '%Y-%m-%d') AS Session_date,
          TIME_FORMAT(s.Session_time, '%H:%i') AS Session_time,
          s.Support_mode, s.Session_status, s.Proposed_by, s.Created_at,
@@ -26,6 +26,7 @@ function toSession(row) {
     volunteerId: row.Volunteer_user_id,
     volunteerName: row.Volunteer_name,
     title: row.Title,
+    description: row.Description ?? null,
     category: row.Category,
     date: row.Session_date,
     time: row.Session_time,

@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS Support_session (
   Student_user_id INT NOT NULL,
   Volunteer_user_id INT NOT NULL,
   Title VARCHAR(100) NOT NULL,
+  Description VARCHAR(255) NULL,
   Category VARCHAR(50) NOT NULL,
   Session_date DATE NOT NULL,
   Session_time TIME NOT NULL,

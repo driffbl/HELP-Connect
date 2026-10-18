@@ -46,7 +46,7 @@ import { Component, computed, input, output } from '@angular/core';
         cursor: pointer;
       }
       button.star:focus-visible {
-        outline: 3px solid var(--brand, #ff5252);
+        outline: 3px solid var(--brand, #e63946);
         outline-offset: 2px;
         border-radius: 4px;
       }

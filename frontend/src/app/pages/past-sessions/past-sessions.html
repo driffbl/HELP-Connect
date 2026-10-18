@@ -1,4 +1,4 @@
-<app-panel title="Past Sessions">
+<app-panel title="Past Sessions" [roleSwitch]="true">
   @if (!signedIn()) {
     <app-auth-notice />
   } @else {
@@ -25,37 +25,15 @@
 
     @if (rows().length > 0) {
       @for (r of rows(); track r.session.id) {
-        <a
-          class="link"
-          [routerLink]="['/past-sessions', r.session.id]"
+        <app-session-card
+          [ref]="r.ref"
+          [category]="r.session.category"
+          [details]="r.details"
+          [status]="r.status"
           [attr.data-testid]="'past-' + r.session.id"
         >
-          <app-session-card
-            [ref]="r.ref"
-            [category]="r.session.category"
-            [title]="r.session.title"
-            [details]="r.details"
-            [status]="r.status"
-          >
-            @if (r.status === 'Completed') {
-              <section class="feedback" data-testid="feedback">
-                @if (r.review; as rv) {
-                  <h3>{{ role() === 'student' ? 'Your feedback' : 'Student feedback' }}</h3>
-                  <app-star-rating [value]="rv.rating" [readonly]="true" />
-                  <p>{{ rv.comment ?? 'No comment left.' }}</p>
-                } @else {
-                  <p class="awaiting">
-                    {{
-                      role() === 'student'
-                        ? 'You have not left feedback yet. Open this session to rate it.'
-                        : 'Awaiting feedback'
-                    }}
-                  </p>
-                }
-              </section>
-            }
-          </app-session-card>
-        </a>
+          <app-session-actions [session]="r.session" [role]="role()" />
+        </app-session-card>
       }
     } @else if (status() === 'ready') {
       <p class="empty" data-testid="no-sessions">No past sessions found</p>

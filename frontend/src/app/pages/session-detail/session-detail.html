@@ -2,83 +2,14 @@
   @if (!signedIn()) {
     <app-auth-notice />
   } @else {
-    @if (notice(); as n) {
-      <p class="notice" role="status" data-testid="notice">{{ n }}</p>
-    }
-
     @if (view(); as v) {
       <app-session-card
         [ref]="v.ref"
         [category]="v.session.category"
-        [title]="v.session.title"
         [details]="v.details"
         [status]="v.status"
       >
-        @if (review(); as rv) {
-          <section class="review" data-testid="session-review">
-            <h3>{{ role() === 'student' ? 'Your review' : 'Student feedback' }}</h3>
-            <app-star-rating [value]="rv.rating" [readonly]="true" />
-            <p>{{ rv.comment ?? 'No comment left.' }}</p>
-          </section>
-        }
-
-        <div class="actions">
-          @if (canConfirm()) {
-            <button
-              type="button"
-              class="action-btn"
-              data-testid="accept"
-              [disabled]="busy()"
-              (click)="accept()"
-            >
-              Accept
-            </button>
-            <button
-              type="button"
-              class="action-btn"
-              data-testid="decline"
-              [disabled]="busy()"
-              (click)="ask('decline')"
-            >
-              Decline
-            </button>
-          }
-          @if (showComplete()) {
-            <button
-              type="button"
-              class="action-btn"
-              data-testid="complete"
-              [disabled]="!canComplete() || busy()"
-              (click)="complete()"
-            >
-              Mark as Complete
-            </button>
-            @if (!canComplete()) {
-              <small class="hint" data-testid="complete-hint">
-                Available once the session starts ({{ v.startsAt }}).
-              </small>
-            }
-          }
-          @if (canReview()) {
-            <a
-              class="action-btn"
-              [routerLink]="['/sessions', v.session.id, 'review']"
-              data-testid="rate-volunteer"
-              >Rate volunteer</a
-            >
-          }
-          @if (canCancel()) {
-            <button
-              type="button"
-              class="action-btn"
-              data-testid="cancel"
-              [disabled]="busy()"
-              (click)="ask('cancel')"
-            >
-              Cancel
-            </button>
-          }
-        </div>
+        <app-session-actions [session]="v.session" [role]="v.role" (updated)="session.set($event)" />
       </app-session-card>
     } @else if (loadState() === 'missing') {
       <p class="empty" data-testid="not-found">Session not found.</p>
@@ -92,24 +23,3 @@
     }
   }
 </app-panel>
-
-@if (pending()) {
-  <app-confirm-modal
-    [title]="modalTitle()"
-    [message]="modalMessage()"
-    confirmLabel="Yes, proceed"
-    (confirmed)="onConfirm()"
-    (dismissed)="pending.set(null)"
-  />
-}
-
-@if (actionError(); as e) {
-  <app-confirm-modal
-    title="That did not work"
-    [message]="e"
-    confirmLabel="OK"
-    [showDismiss]="false"
-    (confirmed)="actionError.set(null)"
-    (dismissed)="actionError.set(null)"
-  />
-}
