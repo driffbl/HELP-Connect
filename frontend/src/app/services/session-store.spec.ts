@@ -38,6 +38,8 @@ function make(id: number, overrides: Partial<Session> = {}): Session {
     proposedBy: null,
     createdAt: '2020-01-01T00:00:00.000Z',
     description: null,
+    requestId: null,
+    requestStatus: null,
     review: null,
     ...overrides,
   };

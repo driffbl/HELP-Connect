@@ -103,7 +103,8 @@ export class MatchingResults implements OnInit {
           },
           error: (err) => {
             console.error('Error reassigning volunteer:', err);
-            alert('Failed to update volunteer assignment in database.');
+            // UC3 integration: show the server's reason (slot already booked, request already accepted, ...).
+            alert(err?.error?.message || 'Failed to update volunteer assignment in database.');
           },
         });
       return;
@@ -134,7 +135,8 @@ export class MatchingResults implements OnInit {
       },
       error: (err) => {
         console.error('Failed to create support request:', err);
-        alert('Database error creating request.');
+        // UC3 integration: show the server's reason (time passed, slot already booked, ...) when it sends one.
+        alert(err?.error?.message || 'Database error creating request.');
       },
     });
   }

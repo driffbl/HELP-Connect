@@ -16,6 +16,8 @@ export interface Session {
   mode: SupportMode;
   status: SessionStatus;
   proposedBy: UserRole | null; // who created the current Pending proposal
+  requestId: number | null; // the support request (Use Case 2) this session came from, if any
+  requestStatus: string | null; // that request's status: Pending, Accepted, Rejected, Cancelled, Completed
   createdAt: string; // ISO timestamp
   review: Review | null; // the student's feedback, once given
 }

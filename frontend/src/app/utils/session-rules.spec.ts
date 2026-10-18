@@ -1,6 +1,7 @@
 import { Session } from '../models/session.model';
 import {
   canCancel,
+  canChooseAnotherVolunteer,
   canComplete,
   canConfirm,
   canDecline,
@@ -27,6 +28,8 @@ function makeSession(overrides: Partial<Session> = {}): Session {
     proposedBy: null,
     createdAt: '2026-10-01T00:00:00.000Z',
     description: null,
+    requestId: null,
+    requestStatus: null,
     review: null,
     ...overrides,
   };
@@ -155,6 +158,22 @@ describe('session rules', () => {
           beforeStart,
         ),
       ).toBe(true);
+    });
+  });
+
+  describe('canChooseAnotherVolunteer', () => {
+    const declined = makeSession({ status: 'Cancelled', requestId: 4, requestStatus: 'Rejected' });
+    it('lets the student pick someone else after a decline, before the requested time', () => {
+      expect(canChooseAnotherVolunteer(declined, 'student', beforeStart)).toBe(true);
+    });
+    it('is false for the volunteer, at or after the start time, and without a rejected request', () => {
+      expect(canChooseAnotherVolunteer(declined, 'volunteer', beforeStart)).toBe(false);
+      expect(canChooseAnotherVolunteer(declined, 'student', atStart)).toBe(false);
+      expect(
+        canChooseAnotherVolunteer({ ...declined, requestStatus: 'Cancelled' }, 'student', beforeStart),
+      ).toBe(false);
+      expect(canChooseAnotherVolunteer({ ...declined, requestId: null }, 'student', beforeStart)).toBe(false);
+      expect(canChooseAnotherVolunteer({ ...declined, status: 'Pending' }, 'student', beforeStart)).toBe(false);
     });
   });
 });

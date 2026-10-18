@@ -8,10 +8,10 @@ const truncate = (text) => (text.length > MAX_MESSAGE ? `${text.slice(0, MAX_MES
 
 /** What each status-changing action does to the session. */
 const TRANSITIONS = {
-  confirm: { to: 'Scheduled', clearProposer: true },
-  decline: { to: 'Cancelled' },
-  cancel: { to: 'Cancelled' },
-  complete: { to: 'Completed' },
+  confirm: { to: 'Scheduled', clearProposer: true, requestStatus: 'Accepted' },
+  decline: { to: 'Cancelled', requestStatus: 'Rejected' }, // a declined request lets the student pick someone else
+  cancel: { to: 'Cancelled', requestStatus: 'Cancelled' },
+  complete: { to: 'Completed', requestStatus: 'Completed' },
 };
 
 /** The message the OTHER person receives. `s` is the session as it was before the change. */
@@ -55,6 +55,7 @@ function createSessionService({ sessions, notifications, tx, now = () => new Dat
     for (const s of stale) {
       const changed = await sessions.setStatus(conn, s.id, 'Pending', 'Cancelled');
       if (!changed) continue;
+      await sessions.syncRequestStatus(conn, s.requestId, 'Rejected'); // expired = unanswered, the student may pick someone else
       await notify(conn, s.studentId, s, `Your request "${s.title}" expired because ${s.volunteerName} did not respond before the start time.`);
       await notify(conn, s.volunteerId, s, `The request "${s.title}" from ${s.studentName} expired because it was not answered before the start time.`);
     }
@@ -112,7 +113,7 @@ function createSessionService({ sessions, notifications, tx, now = () => new Dat
 
   /** confirm, decline, cancel and complete all follow the same steps. */
   async function transition(action, userId, id) {
-    const { to, clearProposer } = TRANSITIONS[action];
+    const { to, clearProposer, requestStatus } = TRANSITIONS[action];
     return tx(async (conn) => {
       await expireStale(conn);
       const { session, role } = await loadMine(conn, userId, id);
@@ -124,6 +125,7 @@ function createSessionService({ sessions, notifications, tx, now = () => new Dat
       if (!changed) {
         throw new HttpError(409, 'This session was just changed by someone else. Please refresh.');
       }
+      await sessions.syncRequestStatus(conn, session.requestId, requestStatus);
 
       const note = notificationFor(action, session, role);
       await notify(conn, note.userId, session, note.message);

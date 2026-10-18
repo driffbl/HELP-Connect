@@ -1,5 +1,5 @@
 import { Component, computed, inject, input, output, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Session, UserRole } from '../../models/session.model';
 import { Clock } from '../../services/clock';
 import { ActionResult, SessionStore } from '../../services/session-store';
@@ -14,7 +14,7 @@ type PendingAction = 'cancel' | 'decline';
  *   Scheduled  volunteer: Mark as Complete (once started), Cancel, Reschedule
  *              student:   Rate volunteer (greyed out until completed), Cancel, Reschedule
  *   Completed  the feedback if there is some, else "Rate volunteer" (student) or "Awaiting feedback"
- *   Cancelled  a short note
+ *   Cancelled  a short note; if the volunteer declined, the student can choose another volunteer
  *   Pending    Accept / Decline for the other party, Cancel for whoever asked
  * It only decides which buttons to show. The server checks every action again.
  */
@@ -100,7 +100,21 @@ type PendingAction = 'cancel' | 'decline';
           }
         }
         @case ('Cancelled') {
-          <p class="note" data-testid="cancelled-note">This session was cancelled.</p>
+          @if (canChooseAnother()) {
+            <div class="buttons">
+              <p class="note" data-testid="declined-note">The volunteer declined this request.</p>
+              <button
+                type="button"
+                class="action-btn"
+                data-testid="choose-another"
+                (click)="chooseAnother()"
+              >
+                Choose another volunteer
+              </button>
+            </div>
+          } @else {
+            <p class="note" data-testid="cancelled-note">This session was cancelled.</p>
+          }
         }
         @default {
           <div class="buttons">
@@ -227,6 +241,7 @@ type PendingAction = 'cancel' | 'decline';
 export class SessionActions {
   private store = inject(SessionStore);
   private clock = inject(Clock);
+  private router = inject(Router);
 
   readonly session = input.required<Session>();
   /** Which side of this session the person is looking from. */
@@ -249,6 +264,9 @@ export class SessionActions {
   );
   protected readonly canComplete = computed(() =>
     rules.canComplete(this.session(), this.role(), this.clock.now()),
+  );
+  protected readonly canChooseAnother = computed(() =>
+    rules.canChooseAnotherVolunteer(this.session(), this.role(), this.clock.now()),
   );
   protected readonly canReview = computed(() =>
     rules.canGiveFeedback(this.session(), this.role(), this.session().review !== null),
@@ -281,6 +299,20 @@ export class SessionActions {
     const id = this.session().id;
     if (action === 'decline') await this.perform(() => this.store.decline(id));
     else if (action === 'cancel') await this.perform(() => this.store.cancel(id));
+  }
+
+  /** Opens the volunteer search (Use Case 2) for this request, with the same category, mode, date and time. */
+  protected chooseAnother(): void {
+    const s = this.session();
+    void this.router.navigate(['/matching-results'], {
+      queryParams: {
+        category: s.category,
+        mode: s.mode,
+        date: s.date,
+        time: s.time,
+        requestId: s.requestId,
+      },
+    });
   }
 
   /** Same message as the "coming soon" buttons on the home page. */

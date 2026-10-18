@@ -14,8 +14,9 @@ USE help_connect;
 -- ----------------------------------------------------------------------------
 -- Support_session
 --   Both people are stored as User ids (a volunteer is a User who volunteers).
---   Request_id is for the Support Request table (Use Case 2). It has no foreign key yet because that
---   table does not exist; add one when it does.
+--   Request_id links to the Support_request table (Use Case 2). It is UNIQUE: one request keeps one
+--   session row, which is reopened if the volunteer declines and the student picks someone else.
+--   There is no foreign key because the two files can run in either order.
 --   Category is plain text until a Category table exists.
 --
 --   Active_slot is generated: while a session is Pending or Scheduled it holds
@@ -47,6 +48,7 @@ CREATE TABLE IF NOT EXISTS Support_session (
   CONSTRAINT fk_session_student FOREIGN KEY (Student_user_id) REFERENCES User(User_id) ON DELETE RESTRICT,
   CONSTRAINT fk_session_volunteer FOREIGN KEY (Volunteer_user_id) REFERENCES User(User_id) ON DELETE RESTRICT,
   UNIQUE KEY uq_volunteer_active_slot (Active_slot),
+  UNIQUE KEY uq_session_request (Request_id),
   KEY idx_session_student (Student_user_id, Session_status),
   KEY idx_session_volunteer (Volunteer_user_id, Session_status)
 );

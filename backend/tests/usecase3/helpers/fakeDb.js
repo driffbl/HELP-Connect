@@ -9,7 +9,7 @@ const { toSqlDateTime } = require('../../../src/utils/dateFormat');
  */
 function createFakeDb(startAt = '2026-10-20T09:00:00') {
   let current = new Date(startAt);
-  const state = { users: [], sessions: [], feedback: [], notes: [], ids: { session: 0, feedback: 0, note: 0 } };
+  const state = { volunteers: [], users: [], sessions: [], feedback: [], notes: [], requests: [], ids: { session: 0, feedback: 0, note: 0, request: 0 } };
 
   const clone = (v) => JSON.parse(JSON.stringify(v));
   const dup = () => Object.assign(new Error('Duplicate entry'), { code: 'ER_DUP_ENTRY' });
@@ -24,12 +24,15 @@ function createFakeDb(startAt = '2026-10-20T09:00:00') {
       volunteerId: row.volunteerId,
       volunteerName: userName(row.volunteerId),
       title: row.title,
+      description: row.description ?? null,
       category: row.category,
       date: row.date,
       time: row.time,
       mode: row.mode,
       status: row.status,
       proposedBy: row.proposedBy,
+      requestId: row.requestId ?? null,
+      requestStatus: row.requestId == null ? null : (state.requests.find((r) => r.id === row.requestId) || {}).status ?? null,
       createdAt: row.createdAt,
       review: fb
         ? { id: fb.id, sessionId: row.id, studentId: row.studentId, volunteerId: row.volunteerId, rating: fb.rating, comment: fb.comment, createdAt: fb.createdAt }
@@ -67,6 +70,32 @@ function createFakeDb(startAt = '2026-10-20T09:00:00') {
       state.sessions.push({ id, studentId: d.studentId, volunteerId: d.volunteerId, title: d.title, category: d.category, date: d.date, time: d.time, mode: d.mode, status: 'Pending', proposedBy: 'student', createdAt: current.toISOString() });
       return id;
     },
+    async findByRequestId(_c, requestId) {
+      const row = state.sessions.find((s) => s.requestId === requestId);
+      return row ? view(row) : null;
+    },
+    async insertFromRequest(_c, d) {
+      const clash = state.sessions.some((s) => isActive(s) && s.volunteerId === d.volunteerId && s.date === d.date && s.time === d.time);
+      if (clash || state.sessions.some((s) => s.requestId === d.requestId)) throw dup();
+      const id = ++state.ids.session;
+      state.sessions.push({ id, requestId: d.requestId, studentId: d.studentId, volunteerId: d.volunteerId, title: d.title, description: d.description, category: d.category, date: d.date, time: d.time, mode: d.mode, status: 'Pending', proposedBy: 'student', createdAt: current.toISOString() });
+      return id;
+    },
+    async reopenFromRequest(_c, id, d) {
+      const row = state.sessions.find((s) => s.id === id);
+      if (!row || !(row.status === 'Pending' || row.status === 'Cancelled')) return false;
+      const clash = state.sessions.some((s) => s.id !== id && isActive(s) && s.volunteerId === d.volunteerId && s.date === d.date && s.time === d.time);
+      if (clash) throw dup();
+      Object.assign(row, { studentId: d.studentId, volunteerId: d.volunteerId, title: d.title, description: d.description, category: d.category, date: d.date, time: d.time, mode: d.mode, status: 'Pending', proposedBy: 'student' });
+      return true;
+    },
+    async syncRequestStatus(_c, requestId, status) {
+      if (requestId === null || requestId === undefined) return false;
+      const r = state.requests.find((x) => x.id === requestId);
+      if (!r) return false;
+      r.status = status;
+      return true;
+    },
     async insertFeedback(_c, d) {
       if (state.feedback.some((f) => f.sessionId === d.sessionId)) throw dup();
       const id = ++state.ids.feedback;
@@ -80,6 +109,40 @@ function createFakeDb(startAt = '2026-10-20T09:00:00') {
     async ratingSummary(_c, volunteerId) {
       const mine = state.feedback.filter((f) => state.sessions.find((s) => s.id === f.sessionId).volunteerId === volunteerId);
       return { average: mine.length ? mine.reduce((a, f) => a + f.rating, 0) / mine.length : null, count: mine.length };
+    },
+  };
+
+  /** Stand-in for requestRepository: the Support_request rows of Use Case 2. */
+  const requests = {
+    async insertRequest(_c, d) {
+      const id = ++state.ids.request;
+      state.requests.push({ id, userId: d.userId, volunteerRecordId: d.volunteerId || null, category: d.categoryName || 'Academic Support', description: d.description, date: d.preferredDate, timeText: d.preferredTime, mode: d.supportMode, status: 'Pending' });
+      return id;
+    },
+    async findRequest(_c, id) {
+      const r = state.requests.find((x) => x.id === id);
+      if (!r) return null;
+      const vol = state.volunteers.find((v) => v.recordId === r.volunteerRecordId);
+      return clone({ id: r.id, studentId: r.userId, studentName: userName(r.userId), volunteerRecordId: r.volunteerRecordId, volunteerUserId: vol ? vol.userId : null, category: r.category, description: r.description, date: r.date, timeText: r.timeText, mode: r.mode, status: r.status });
+    },
+    async setVolunteer(_c, id, volunteerRecordId) {
+      const r = state.requests.find((x) => x.id === id);
+      if (!r) return false;
+      r.volunteerRecordId = volunteerRecordId;
+      r.status = 'Pending';
+      return true;
+    },
+    async setStatus(_c, id, status) {
+      const r = state.requests.find((x) => x.id === id);
+      if (!r) return false;
+      r.status = status;
+      return true;
+    },
+    async updateCriteria(_c, id, d) {
+      const r = state.requests.find((x) => x.id === id);
+      if (!r) return false;
+      Object.assign(r, { description: d.description, date: d.preferredDate, timeText: d.preferredTime, mode: d.supportMode, status: 'Pending', volunteerRecordId: null });
+      return true;
     },
   };
 
@@ -121,11 +184,14 @@ function createFakeDb(startAt = '2026-10-20T09:00:00') {
   return {
     state,
     sessions,
+    requests,
     notifications,
     tx,
     now: () => new Date(current),
     setNow(text) { current = new Date(text); },
     addUser(id, name, status = 'Active') { state.users.push({ id, name, status }); },
+    /** A row of the Volunteer table: recordId is the Volunteer id Law's requests store, userId is the User id. */
+    addVolunteer(recordId, userId) { state.volunteers.push({ recordId, userId }); },
     notesFor(userId) { return state.notes.filter((n) => n.userId === userId).map((n) => n.message); },
     nowSql: () => toSqlDateTime(current),
   };

@@ -53,6 +53,24 @@ export function canGiveFeedback(s: Session, role: UserRole, alreadyReviewed: boo
   return role === 'student' && s.status === 'Completed' && !alreadyReviewed;
 }
 
+/**
+ * A student whose request was declined can pick another volunteer, as long as the requested time
+ * has not passed (the new volunteer gets the same date and time).
+ */
+export function canChooseAnotherVolunteer(
+  s: Session,
+  role: UserRole,
+  now: Date = new Date(),
+): boolean {
+  return (
+    role === 'student' &&
+    s.status === 'Cancelled' &&
+    s.requestStatus === 'Rejected' &&
+    s.requestId !== null &&
+    now < sessionStart(s)
+  );
+}
+
 /** Completed sessions and Cancelled ones (including Pending that expired) are "past". */
 export function isPast(s: Session, now: Date = new Date()): boolean {
   const status = effectiveStatus(s, now);

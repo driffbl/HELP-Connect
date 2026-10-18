@@ -39,7 +39,7 @@ test('toSession maps a row to the shape the Angular app uses', () => {
   assert.deepEqual(sessions.toSession(row), {
     id: 7, studentId: 1, studentName: 'Sam', volunteerId: 2, volunteerName: 'Vera',
     title: 'Python Tutoring', description: 'Help with loops and functions.', category: 'Academic Support', date: '2026-10-22', time: '10:00',
-    mode: 'Virtual', status: 'Pending', proposedBy: 'student', createdAt: '2026-10-20T01:00:00.000Z', review: null,
+    mode: 'Virtual', status: 'Pending', proposedBy: 'student', requestId: null, requestStatus: null, createdAt: '2026-10-20T01:00:00.000Z', review: null,
   });
 });
 
@@ -126,4 +126,36 @@ test('markRead says false for a notification that is missing or belongs to someo
   const conn = recorder([{ affectedRows: 0 }], [[], []]);
   assert.equal(await notifications.markRead(conn, 1, 999), false);
   assert.match(conn.calls[0].sql, /Notification_id = \? AND User_id = \?/);
+});
+
+test('request-link queries are well formed and the session row carries the request', async () => {
+  const withRequest = { ...row, Request_id: 5, Request_status: 'Rejected' };
+  assert.equal(sessions.toSession(withRequest).requestId, 5);
+  assert.equal(sessions.toSession(withRequest).requestStatus, 'Rejected');
+
+  const data = { requestId: 5, studentId: 1, volunteerId: 2, title: 'T', description: 'D', category: 'Academic Support', date: '2026-10-22', time: '10:00', mode: 'Virtual' };
+  const conn = recorder([[withRequest], []], [{ insertId: 9 }], [{ affectedRows: 1 }], [{ affectedRows: 0 }], [{ affectedRows: 1 }]);
+  assert.equal((await sessions.findByRequestId(conn, 5)).id, 7);
+  assert.equal(await sessions.insertFromRequest(conn, data), 9);
+  assert.equal(await sessions.reopenFromRequest(conn, 7, data), true);
+  assert.equal(await sessions.reopenFromRequest(conn, 7, data), false);
+  assert.equal(await sessions.syncRequestStatus(conn, 5, 'Accepted'), true);
+  assert.equal(await sessions.syncRequestStatus(conn, null, 'Accepted'), false); // no query for a session without a request
+  conn.calls.forEach(assertWellFormed);
+  assert.equal(conn.calls.length, 5);
+  assert.match(conn.calls[0].sql, /s\.Request_id = \?/);
+  assert.match(conn.calls[2].sql, /Session_status IN \('Pending', 'Cancelled'\)/);
+});
+
+test('request table queries are well formed', async () => {
+  const requests = require('../../src/repositories/requestRepository');
+  const r = { Request_id: 5, Student_user_id: 1, Student_name: 'Sam', Volunteer_id: 10, Volunteer_user_id: 2, Category_name: 'Academic Support', Description: 'D', Preferred_date: '2026-10-22', Preferred_time: '10:00', Support_mode: 'Virtual', Request_status: 'Pending' };
+  const conn = recorder([[r], []], [{ insertId: 6 }], [{ affectedRows: 1 }], [{ affectedRows: 1 }], [{ affectedRows: 1 }], [[], []]);
+  assert.deepEqual(await requests.findRequest(conn, 5), { id: 5, studentId: 1, studentName: 'Sam', volunteerRecordId: 10, volunteerUserId: 2, category: 'Academic Support', description: 'D', date: '2026-10-22', timeText: '10:00', mode: 'Virtual', status: 'Pending' });
+  assert.equal(await requests.insertRequest(conn, { userId: 1, volunteerId: undefined, categoryId: 1, description: 'D', preferredDate: '2026-10-22', preferredTime: '10:00', supportMode: 'Virtual' }), 6);
+  assert.equal(await requests.setVolunteer(conn, 5, 10, { refreshTimestamp: true }), true);
+  assert.equal(await requests.setStatus(conn, 5, 'Accepted'), true);
+  assert.equal(await requests.updateCriteria(conn, 5, { categoryId: 1, description: 'D', preferredDate: '2026-10-22', preferredTime: '10:00', supportMode: 'Virtual' }), true);
+  assert.equal(await requests.findRequest(conn, 999), null);
+  conn.calls.forEach(assertWellFormed);
 });

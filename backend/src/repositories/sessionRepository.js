@@ -11,10 +11,12 @@ const SELECT_SESSION = `
          DATE_FORMAT(s.Session_date, '%Y-%m-%d') AS Session_date,
          TIME_FORMAT(s.Session_time, '%H:%i') AS Session_time,
          s.Support_mode, s.Session_status, s.Proposed_by, s.Created_at,
+         s.Request_id, sr.Request_status,
          f.Feedback_id, f.Rating, f.Comments, f.Created_at AS Feedback_created_at
   FROM Support_session s
   JOIN User su ON su.User_id = s.Student_user_id
   JOIN User vu ON vu.User_id = s.Volunteer_user_id
+  LEFT JOIN Support_request sr ON sr.Request_id = s.Request_id
   LEFT JOIN Feedback f ON f.Session_id = s.Session_id`;
 
 /** One database row -> the session object the API returns (same shape as the Angular model). */
@@ -33,6 +35,8 @@ function toSession(row) {
     mode: row.Support_mode,
     status: row.Session_status,
     proposedBy: row.Proposed_by,
+    requestId: row.Request_id ?? null,
+    requestStatus: row.Request_status ?? null,
     createdAt: new Date(row.Created_at).toISOString(),
     review:
       row.Feedback_id === null || row.Feedback_id === undefined
@@ -108,6 +112,50 @@ async function insertSession(conn, data) {
   return result.insertId;
 }
 
+/** The session that belongs to a support request (Use Case 2), or null if it has none yet. */
+async function findByRequestId(conn, requestId) {
+  const [rows] = await conn.query(`${SELECT_SESSION} WHERE s.Request_id = ?`, [requestId]);
+  return rows.length === 0 ? null : toSession(rows[0]);
+}
+
+/** A session created from a support request. Starts Pending, proposed by the student. */
+async function insertFromRequest(conn, d) {
+  const [result] = await conn.query(
+    `INSERT INTO Support_session
+       (Request_id, Student_user_id, Volunteer_user_id, Title, Description, Category,
+        Session_date, Session_time, Support_mode, Session_status, Proposed_by)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending', 'student')`,
+    [d.requestId, d.studentId, d.volunteerId, d.title, d.description, d.category, d.date, d.time, d.mode]
+  );
+  return result.insertId;
+}
+
+/**
+ * Reopens the session of a request for a (new) volunteer: back to Pending with the request's details.
+ * Only a Pending or Cancelled session can be reopened. Returns false if it was in another status.
+ */
+async function reopenFromRequest(conn, id, d) {
+  const [result] = await conn.query(
+    `UPDATE Support_session
+     SET Student_user_id = ?, Volunteer_user_id = ?, Title = ?, Description = ?, Category = ?,
+         Session_date = ?, Session_time = ?, Support_mode = ?, Session_status = 'Pending',
+         Proposed_by = 'student'
+     WHERE Session_id = ? AND Session_status IN ('Pending', 'Cancelled')`,
+    [d.studentId, d.volunteerId, d.title, d.description, d.category, d.date, d.time, d.mode, id]
+  );
+  return result.affectedRows === 1;
+}
+
+/** Keeps the Use Case 2 request in step with its session. Does nothing for a session without a request. */
+async function syncRequestStatus(conn, requestId, requestStatus) {
+  if (requestId === null || requestId === undefined) return false;
+  const [result] = await conn.query(
+    'UPDATE Support_request SET Request_status = ? WHERE Request_id = ?',
+    [requestStatus, requestId]
+  );
+  return result.affectedRows === 1;
+}
+
 async function insertFeedback(conn, { sessionId, rating, comment }) {
   const [result] = await conn.query(
     'INSERT INTO Feedback (Session_id, Rating, Comments) VALUES (?, ?, ?)',
@@ -146,6 +194,10 @@ module.exports = {
   findStalePending,
   setStatus,
   insertSession,
+  findByRequestId,
+  insertFromRequest,
+  reopenFromRequest,
+  syncRequestStatus,
   insertFeedback,
   findUser,
   ratingSummary,

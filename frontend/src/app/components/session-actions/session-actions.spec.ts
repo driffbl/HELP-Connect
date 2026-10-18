@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
 import { vi } from 'vitest';
 import { Review, Session, UserRole } from '../../models/session.model';
 import { Clock } from '../../services/clock';
@@ -24,6 +24,8 @@ function make(overrides: Partial<Session> = {}): Session {
     status: 'Scheduled',
     proposedBy: null,
     createdAt: '2026-10-18T01:00:00.000Z',
+    requestId: null,
+    requestStatus: null,
     review: null,
     ...overrides,
   };
@@ -149,6 +151,35 @@ describe('SessionActions for other statuses', () => {
     expect(find('cancelled-note')).not.toBeNull();
     expect(find('cancel')).toBeNull();
     expect(find('reschedule')).toBeNull();
+  });
+
+  const DECLINED = { status: 'Cancelled', requestId: 12, requestStatus: 'Rejected' } as const;
+
+  it('lets the student choose another volunteer after a decline, with the same request details', () => {
+    const { find } = setup(make(DECLINED), 'student');
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    expect(find('declined-note')).not.toBeNull();
+    find('choose-another')!.click();
+    expect(navigate).toHaveBeenCalledWith(['/matching-results'], {
+      queryParams: {
+        category: 'Academic Support',
+        mode: 'Virtual',
+        date: '2026-10-22',
+        time: '10:00',
+        requestId: 12,
+      },
+    });
+  });
+
+  it('does not offer another volunteer to the volunteer, after a student cancel, or once the time has passed', () => {
+    expect(setup(make(DECLINED), 'volunteer').find('choose-another')).toBeNull();
+    expect(
+      setup(make({ ...DECLINED, requestStatus: 'Cancelled' }), 'student').find('choose-another'),
+    ).toBeNull();
+    expect(
+      setup(make({ ...DECLINED, date: '2026-10-19' }), 'student').find('choose-another'),
+    ).toBeNull();
+    expect(setup(make({ status: 'Cancelled' }), 'student').find('choose-another')).toBeNull();
   });
 
   it('treats a Pending request nobody answered before it started as Cancelled', () => {
