@@ -1,21 +1,34 @@
 <app-panel [title]="pageTitle()">
-  @if (rows().length === 0) {
-    <p class="empty" data-testid="no-sessions">No sessions found</p>
-  }
+  @if (!signedIn()) {
+    <app-auth-notice />
+  } @else {
+    @if (status() === 'error') {
+      <div class="state error" role="alert" data-testid="load-error">
+        <span>{{ error() }}</span>
+        <button type="button" data-testid="retry" (click)="retry()">Try again</button>
+      </div>
+    }
 
-  @for (r of rows(); track r.session.id) {
-    <a
-      class="link"
-      [routerLink]="['/sessions', r.session.id]"
-      [attr.data-testid]="'session-' + r.session.id"
-    >
-      <app-session-card
-        [ref]="r.ref"
-        [category]="r.session.category"
-        [title]="r.session.title"
-        [details]="r.details"
-        [status]="r.status"
-      />
-    </a>
+    @if (rows().length > 0) {
+      @for (r of rows(); track r.session.id) {
+        <a
+          class="link"
+          [routerLink]="['/sessions', r.session.id]"
+          [attr.data-testid]="'session-' + r.session.id"
+        >
+          <app-session-card
+            [ref]="r.ref"
+            [category]="r.session.category"
+            [title]="r.session.title"
+            [details]="r.details"
+            [status]="r.status"
+          />
+        </a>
+      }
+    } @else if (status() === 'ready') {
+      <p class="empty" data-testid="no-sessions">No sessions found</p>
+    } @else if (status() !== 'error') {
+      <p class="state" data-testid="loading">Loading sessions…</p>
+    }
   }
 </app-panel>

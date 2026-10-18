@@ -67,3 +67,23 @@ textarea:focus-visible {
 .done {
   text-align: center;
 }
+.state.error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--status-cancelled, #dc2626);
+}
+.state button {
+  padding: 4px 12px;
+  border: 1px solid var(--brand, #ff5252);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--brand, #ff5252);
+  font-weight: 600;
+  cursor: pointer;
+}
+.action-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}

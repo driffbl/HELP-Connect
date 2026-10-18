@@ -1,20 +1,16 @@
 import { Service, computed, inject, signal } from '@angular/core';
 import { Review, Session, SessionStatus } from '../models/session.model';
-import {
-  canCancel,
-  canComplete,
-  canConfirm,
-  canDecline,
-  canGiveFeedback,
-  effectiveStatus,
-  isInMySessions,
-  isPast,
-  sessionStart,
-} from '../utils/session-rules';
+import { ApiError, toApiError } from '../utils/api-error';
+import { effectiveStatus, isInMySessions, isPast, sessionStart } from '../utils/session-rules';
 import { Clock } from './clock';
 import { CurrentUser } from './current-user';
+import { SessionApi } from './session-api';
 
-export type ReviewResult = { ok: true } | { ok: false; error: string };
+export type ListStatus = 'idle' | 'loading' | 'ready' | 'error';
+
+/** The result of something the user did. The error is a message fit to show. status 0 = server unreachable. */
+export type ActionResult =
+  { ok: true; session: Session } | { ok: false; status: number; error: string };
 
 /** A past (Completed or Cancelled) session, its status as it should be shown, and the review if any. */
 export interface HistoryRow {
@@ -23,253 +19,135 @@ export interface HistoryRow {
   review: Review | null;
 }
 
-const MINUTE = 60_000;
-const DAY = 24 * 60 * MINUTE;
-
-function at(offsetMinutes: number): { date: string; time: string } {
-  const d = new Date(Date.now() + offsetMinutes * MINUTE);
-  const p = (n: number) => String(n).padStart(2, '0');
-  return {
-    date: `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`,
-    time: `${p(d.getHours())}:${p(d.getMinutes())}`,
-  };
+interface ListState {
+  status: ListStatus;
+  sessions: Session[];
+  error: string | null;
 }
 
-const daysAgo = (n: number) => new Date(Date.now() - n * DAY).toISOString();
+const IDLE: ListState = { status: 'idle', sessions: [], error: null };
 
-// Temporary seed data. Replace with HTTP calls to the backend later.
-function seedSessions(): Session[] {
-  const base = {
-    studentId: 1,
-    studentName: 'Test Student',
-    volunteerId: 2,
-    volunteerName: 'Test Volunteer',
-  };
-  return [
-    {
-      ...base,
-      id: 1,
-      title: 'Python Tutoring',
-      category: 'Academic Support',
-      createdAt: daysAgo(1),
-      ...at(2 * 1440),
-      mode: 'Virtual',
-      status: 'Pending',
-      proposedBy: 'student',
-    },
-    {
-      ...base,
-      id: 2,
-      title: 'Laptop Setup Help',
-      category: 'Technology Support',
-      createdAt: daysAgo(3),
-      ...at(1440),
-      mode: 'Face-to-Face',
-      status: 'Scheduled',
-      proposedBy: null,
-    },
-    {
-      ...base,
-      id: 3,
-      title: 'CV Review',
-      category: 'Career Guidance',
-      createdAt: daysAgo(4),
-      ...at(-60),
-      mode: 'Virtual',
-      status: 'Scheduled',
-      proposedBy: null,
-    },
-    {
-      ...base,
-      id: 4,
-      title: 'Cloud Computing Tutoring',
-      category: 'Academic Support',
-      createdAt: daysAgo(8),
-      ...at(-3 * 1440),
-      mode: 'Virtual',
-      status: 'Completed',
-      proposedBy: null,
-    },
-    {
-      ...base,
-      id: 5,
-      title: 'Stress Management Chat',
-      category: 'Wellbeing',
-      createdAt: daysAgo(9),
-      ...at(-2 * 1440),
-      mode: 'Virtual',
-      status: 'Cancelled',
-      proposedBy: null,
-    },
-    {
-      ...base,
-      id: 6,
-      title: 'Wi-Fi Troubleshooting',
-      category: 'Technology Support',
-      createdAt: daysAgo(2),
-      ...at(-60),
-      mode: 'Virtual',
-      status: 'Pending',
-      proposedBy: 'student',
-    }, // expired Pending
-    {
-      ...base,
-      id: 7,
-      title: 'Java Debugging',
-      category: 'Academic Support',
-      createdAt: daysAgo(5),
-      ...at(-1440),
-      mode: 'Virtual',
-      status: 'Completed',
-      proposedBy: null,
-    }, // completed, no review yet
-    {
-      ...base,
-      id: 8,
-      title: 'Resume Workshop',
-      category: 'Career Guidance',
-      createdAt: daysAgo(12),
-      ...at(-6 * 1440),
-      mode: 'Face-to-Face',
-      status: 'Completed',
-      proposedBy: null,
-    },
-  ];
-}
-
-function seedReviews(): Review[] {
-  return [
-    {
-      id: 1,
-      sessionId: 4,
-      studentId: 1,
-      volunteerId: 2,
-      rating: 5,
-      comment: 'Very clear explanations.',
-      createdAt: daysAgo(3),
-    },
-    {
-      id: 2,
-      sessionId: 8,
-      studentId: 1,
-      volunteerId: 2,
-      rating: 4,
-      comment: null,
-      createdAt: daysAgo(6),
-    },
-  ];
-}
-
+/**
+ * What the app knows about the current user's sessions. The backend is the source of truth: this only
+ * keeps a copy so the pages can show it and update when something changes. Lists are kept per
+ * person and mode, so switching Student/Volunteer never shows the other side's data.
+ */
 @Service()
 export class SessionStore {
+  private api = inject(SessionApi);
   private auth = inject(CurrentUser);
   private clock = inject(Clock);
-  private all = signal<Session[]>(seedSessions());
-  private reviews = signal<Review[]>(seedReviews());
 
-  /** Sessions belonging to the current user in their current role, newest first. */
-  readonly mySessions = computed(() => {
+  private readonly lists = signal<Readonly<Record<string, ListState>>>({});
+  private readonly key = computed(() => {
     const u = this.auth.user();
-    return this.all()
-      .filter((s) => (u.role === 'student' ? s.studentId === u.id : s.volunteerId === u.id))
-      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    return `${u.id}:${u.role}`;
   });
+  private readonly current = computed(() => this.lists()[this.key()] ?? IDLE);
 
-  /** My Sessions: everything except Completed sessions that already have feedback. */
+  readonly status = computed(() => this.current().status);
+  readonly error = computed(() => this.current().error);
+
+  /** Every session in the current list, newest first, as the server sent them. */
+  readonly mySessions = computed(() => this.current().sessions);
+
+  /** My Sessions: everything except a Completed session that already has feedback. */
   readonly activeSessions = computed(() => {
     const now = this.clock.now();
-    return this.mySessions().filter((s) =>
-      isInMySessions(s, this.reviewFor(s.id) !== undefined, now),
-    );
+    return this.mySessions().filter((s) => isInMySessions(s, s.review !== null, now));
   });
 
-  /**
-   * Past Sessions: Completed and Cancelled sessions of the current user (either role),
-   * most recent first, each with the review the student left (or null).
-   */
+  /** Past Sessions: Completed and Cancelled (including expired Pending), most recent first. */
   readonly pastSessions = computed<HistoryRow[]>(() => {
     const now = this.clock.now();
     return this.mySessions()
       .filter((s) => isPast(s, now))
       .sort((a, b) => sessionStart(b).getTime() - sessionStart(a).getTime())
-      .map((s) => ({
-        session: s,
-        status: effectiveStatus(s, now),
-        review: this.reviewFor(s.id) ?? null,
-      }));
+      .map((s) => ({ session: s, status: effectiveStatus(s, now), review: s.review }));
   });
 
   /** Reviews the current volunteer has received. Always 0 for a student. */
   readonly reviewCount = computed(() =>
-    this.role() === 'volunteer' ? this.pastSessions().filter((r) => r.review !== null).length : 0,
+    this.auth.user().role === 'volunteer'
+      ? this.pastSessions().filter((r) => r.review !== null).length
+      : 0,
   );
 
   /** The current volunteer's average rating, or null when there are none (always null for a student). */
   readonly averageRating = computed<number | null>(() => {
-    if (this.role() !== 'volunteer') return null;
+    if (this.auth.user().role !== 'volunteer') return null;
     const ratings = this.pastSessions().flatMap((r) => (r.review ? [r.review.rating] : []));
     return ratings.length === 0 ? null : ratings.reduce((sum, n) => sum + n, 0) / ratings.length;
   });
 
-  /** Only returns a session the current user takes part in. */
-  get(id: number): Session | undefined {
-    return this.mySessions().find((s) => s.id === id);
-  }
-
-  reviewFor(sessionId: number): Review | undefined {
-    return this.reviews().find((r) => r.sessionId === sessionId);
-  }
-
-  confirm(id: number): void {
-    const s = this.get(id);
-    if (s && canConfirm(s, this.role())) this.patch(id, { status: 'Scheduled', proposedBy: null });
-  }
-
-  decline(id: number): void {
-    const s = this.get(id);
-    if (s && canDecline(s, this.role())) this.patch(id, { status: 'Cancelled' });
-  }
-
-  cancel(id: number): void {
-    const s = this.get(id);
-    if (s && canCancel(s, this.role())) this.patch(id, { status: 'Cancelled' });
-  }
-
-  complete(id: number): void {
-    const s = this.get(id);
-    if (s && canComplete(s, this.role())) this.patch(id, { status: 'Completed' });
-  }
-
-  addReview(sessionId: number, rating: number, comment: string): ReviewResult {
-    const s = this.get(sessionId);
-    if (!s) return { ok: false, error: 'Session not found.' };
-    if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
-      return { ok: false, error: 'Please select a star rating before submitting.' };
+  /** Loads the current user's list for the current mode. Does nothing when nobody is signed in. */
+  async refresh(): Promise<void> {
+    if (!this.auth.signedIn()) return;
+    const key = this.key();
+    const role = this.auth.user().role;
+    this.setList(key, { ...(this.lists()[key] ?? IDLE), status: 'loading', error: null });
+    try {
+      const sessions = await this.api.list(role);
+      this.setList(key, { status: 'ready', sessions, error: null });
+    } catch (err) {
+      this.setList(key, {
+        ...(this.lists()[key] ?? IDLE),
+        status: 'error',
+        error: toApiError(err).message,
+      });
     }
-    if (!canGiveFeedback(s, this.role(), this.reviewFor(sessionId) !== undefined)) {
-      return { ok: false, error: 'Feedback is not available for this session.' };
+  }
+
+  /** One session straight from the server. Also refreshes its copy in any list that holds it. */
+  fetch(id: number): Promise<ActionResult> {
+    return this.run(() => this.api.get(id));
+  }
+
+  confirm(id: number): Promise<ActionResult> {
+    return this.run(() => this.api.confirm(id));
+  }
+
+  decline(id: number): Promise<ActionResult> {
+    return this.run(() => this.api.decline(id));
+  }
+
+  cancel(id: number): Promise<ActionResult> {
+    return this.run(() => this.api.cancel(id));
+  }
+
+  complete(id: number): Promise<ActionResult> {
+    return this.run(() => this.api.complete(id));
+  }
+
+  addReview(id: number, rating: number, comment: string): Promise<ActionResult> {
+    return this.run(() =>
+      this.api.addFeedback(id, rating, comment.trim() === '' ? null : comment.trim()),
+    );
+  }
+
+  private async run(call: () => Promise<Session>): Promise<ActionResult> {
+    try {
+      const session = await call();
+      this.applyUpdate(session);
+      return { ok: true, session };
+    } catch (err) {
+      const e: ApiError = toApiError(err);
+      return { ok: false, status: e.status, error: e.message };
     }
-    const text = comment.trim();
-    this.reviews.update((list) => [
-      ...list,
-      {
-        id: Math.max(0, ...list.map((r) => r.id)) + 1,
-        sessionId,
-        studentId: s.studentId,
-        volunteerId: s.volunteerId,
-        rating,
-        comment: text === '' ? null : text.slice(0, 255),
-        createdAt: new Date().toISOString(),
-      },
-    ]);
-    return { ok: true };
   }
 
-  private role() {
-    return this.auth.user().role;
+  /** Replaces the session in every list that already holds it, so all pages agree. */
+  private applyUpdate(session: Session): void {
+    const next: Record<string, ListState> = {};
+    for (const [key, state] of Object.entries(this.lists())) {
+      next[key] = state.sessions.some((s) => s.id === session.id)
+        ? { ...state, sessions: state.sessions.map((s) => (s.id === session.id ? session : s)) }
+        : state;
+    }
+    this.lists.set(next);
   }
 
-  private patch(id: number, changes: Partial<Session>): void {
-    this.all.update((list) => list.map((s) => (s.id === id ? { ...s, ...changes } : s)));
+  private setList(key: string, state: ListState): void {
+    this.lists.set({ ...this.lists(), [key]: state });
   }
 }

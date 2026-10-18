@@ -16,6 +16,7 @@ export interface Session {
   status: SessionStatus;
   proposedBy: UserRole | null; // who created the current Pending proposal
   createdAt: string; // ISO timestamp
+  review: Review | null; // the student's feedback, once given
 }
 
 export interface Review {

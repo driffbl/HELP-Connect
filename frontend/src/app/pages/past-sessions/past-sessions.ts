@@ -1,6 +1,7 @@
 import { DecimalPipe } from '@angular/common';
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, effect, inject, untracked } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { AuthNotice } from '../../components/auth-notice/auth-notice';
 import { Panel } from '../../components/panel/panel';
 import { SessionCard } from '../../components/session-card/session-card';
 import { StarRating } from '../../components/star-rating/star-rating';
@@ -13,7 +14,7 @@ import { sessionDetails, sessionRef } from '../../utils/session-format';
  * Volunteers also see their average rating. Students see the feedback they submitted.
  */
 @Component({
-  imports: [DecimalPipe, RouterLink, Panel, SessionCard, StarRating],
+  imports: [DecimalPipe, RouterLink, AuthNotice, Panel, SessionCard, StarRating],
   selector: 'app-past-sessions',
   styleUrl: './past-sessions.css',
   templateUrl: './past-sessions.html',
@@ -23,6 +24,9 @@ export class PastSessions {
   private store = inject(SessionStore);
 
   protected readonly role = computed(() => this.auth.user().role);
+  protected readonly signedIn = this.auth.signedIn;
+  protected readonly status = this.store.status;
+  protected readonly error = this.store.error;
   protected readonly average = this.store.averageRating;
   protected readonly reviewCount = this.store.reviewCount;
 
@@ -36,4 +40,16 @@ export class PastSessions {
       details: sessionDetails(r.session, role),
     }));
   });
+
+  constructor() {
+    // Load whenever the person or the Student/Volunteer mode changes.
+    effect(() => {
+      this.auth.user();
+      untracked(() => void this.store.refresh());
+    });
+  }
+
+  protected retry(): void {
+    void this.store.refresh();
+  }
 }

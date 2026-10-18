@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { DevLogin } from './pages/dev-login/dev-login';
 import { MySessions } from './pages/my-sessions/my-sessions';
 import { PastSessions } from './pages/past-sessions/past-sessions';
 import { SessionDetail } from './pages/session-detail/session-detail';
@@ -11,4 +12,6 @@ export const sessionRoutes: Routes = [
   { path: 'sessions/:id/review', component: SessionReview },
   { path: 'past-sessions', component: PastSessions },
   { path: 'past-sessions/:id', component: SessionDetail, data: { backLink: '/past-sessions' } },
+  // Development only: delete with the dev-token script when the real login is merged.
+  { path: 'dev-login', component: DevLogin },
 ];

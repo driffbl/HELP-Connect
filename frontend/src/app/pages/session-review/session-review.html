@@ -1,5 +1,7 @@
 <app-panel title="Rate Your Volunteer" [backLink]="'/sessions/' + id">
-  @if (submitted()) {
+  @if (!signedIn()) {
+    <app-auth-notice />
+  } @else if (submitted()) {
     <section class="done" data-testid="review-success">
       <h2>Thank you for your feedback</h2>
       <p>Your review has been saved.</p>
@@ -32,13 +34,26 @@
         ></textarea>
         <small class="count">{{ comment().length }}/{{ maxComment }}</small>
 
-        <button type="button" class="action-btn" data-testid="submit-review" (click)="submit()">
+        <button
+          type="button"
+          class="action-btn"
+          data-testid="submit-review"
+          [disabled]="busy()"
+          (click)="submit()"
+        >
           Submit review
         </button>
       </section>
     }
-  } @else {
+  } @else if (loadState() === 'missing') {
     <p class="blocked" data-testid="not-found">Session not found.</p>
+  } @else if (loadState() === 'error') {
+    <div class="state error" role="alert" data-testid="load-error">
+      <span>{{ loadError() }}</span>
+      <button type="button" data-testid="retry" (click)="retry()">Try again</button>
+    </div>
+  } @else {
+    <p class="blocked" data-testid="loading">Loading session…</p>
   }
 </app-panel>
 
