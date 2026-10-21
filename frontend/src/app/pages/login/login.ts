@@ -20,6 +20,7 @@ export class Login {
   // 1. Change to signals
   error = signal('');
   loading = signal(false);
+showPassword = false;
 
   onSubmit() {
     this.error.set('');

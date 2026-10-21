@@ -15,10 +15,12 @@ export class Signup {
   private api = inject(Api);
   private router = inject(Router);
 
-  form = { name: '', email: '', password: '' };
+  form = { name: '', email: '', password: '', confirmPassword: '' };
   
   error = signal('');
   loading = signal(false);
+  showPassword = false;
+showConfirmPassword = false;
 
   onSubmit() {
     this.error.set('');
@@ -27,26 +29,31 @@ export class Signup {
       this.error.set('Please enter your full name.');
       return;
     }
-
     if (this.form.name.trim().length < 2) {
       this.error.set('Name must be at least 2 characters.');
       return;
     }
-
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(this.form.email)) {
       this.error.set('Please enter a valid email address.');
       return;
     }
-
     if (this.form.password.length < 8) {
       this.error.set('Password must be at least 8 characters.');
+      return;
+    }
+    if (this.form.password !== this.form.confirmPassword) {
+      this.error.set('Passwords do not match.');
       return;
     }
 
     this.loading.set(true);
 
-    this.api.register(this.form).subscribe({
+    this.api.register({
+      name: this.form.name,
+      email: this.form.email,
+      password: this.form.password
+    }).subscribe({
       next: () => {
         localStorage.setItem('pendingEmail', this.form.email);
         this.router.navigate(['/verify']);

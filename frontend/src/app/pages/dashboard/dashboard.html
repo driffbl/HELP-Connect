@@ -10,18 +10,18 @@
 
   <div class="dashboard-grid">
     
-    <!-- If NOT a volunteer, show Become a Volunteer -->
-    <a *ngIf="!isVolunteer()" routerLink="/volunteer/register" class="dash-card">
+    <!-- Volunteer Card (Dynamic) -->
+    <a [routerLink]="isVolunteer() ? '/volunteer/profile' : '/volunteer/register'" class="dash-card">
       <div class="dash-icon">🤝</div>
-      <h3>Become a Volunteer</h3>
-      <p>Share your skills with other students</p>
+      <h3>{{ isVolunteer() ? 'View Volunteer Profile' : 'Become a Volunteer' }}</h3>
+      <p>{{ isVolunteer() ? 'See your volunteer info' : 'Share your skills with students' }}</p>
     </a>
 
-    <!-- If ALREADY a volunteer, show View Profile -->
-    <a *ngIf="isVolunteer()" routerLink="/volunteer/profile" class="dash-card">
+    <!-- NEW: Student Profile Card -->
+    <a routerLink="/student/profile" class="dash-card">
       <div class="dash-icon">👤</div>
-      <h3>View Volunteer Profile</h3>
-      <p>See your volunteer information and skills</p>
+      <h3>My Student Profile</h3>
+      <p>Update your personal info</p>
     </a>
 
     <!-- Home Card -->
@@ -30,5 +30,6 @@
       <h3>Home</h3>
       <p>Back to the main page</p>
     </a>
+
   </div>
 </div>

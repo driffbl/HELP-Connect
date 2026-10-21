@@ -7,13 +7,21 @@
 
   <form (ngSubmit)="onSubmit()">
     <label>Weekly Availability</label>
-    <input
-      type="text"
-      name="availability"
-      [(ngModel)]="form.availability"
-      placeholder="e.g. Mon/Wed 14:00-16:00"
-      required
-    />
+<div style="display: flex; gap: 10px; margin-bottom: 16px;">
+  <select [(ngModel)]="selectedDay" name="day" style="flex: 1;">
+    <option *ngFor="let day of days" [value]="day">{{ day }}</option>
+  </select>
+  
+  <select [(ngModel)]="selectedStartTime" name="startTime" style="flex: 1;">
+    <option *ngFor="let time of times" [value]="time">{{ time }}</option>
+  </select>
+  
+  <span style="align-self: center; font-weight: bold; color: #666;">to</span>
+  
+  <select [(ngModel)]="selectedEndTime" name="endTime" style="flex: 1;">
+    <option *ngFor="let time of times" [value]="time">{{ time }}</option>
+  </select>
+</div>
 
     <label>Preferred Support Mode</label>
     <select name="preferred_mode" [(ngModel)]="form.preferred_mode">

@@ -21,6 +21,14 @@ export class VolunteerRegister implements OnInit {
   selectedCategories = signal<number[]>([]);
   selectedSkills = signal<number[]>([]);
 
+  // Availability formatting variables
+  days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  times = ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'];
+  selectedDay = 'Monday';
+  selectedStartTime = '14:00';
+  selectedEndTime = '16:00';
+
+  // Leave availability empty here. We will generate it on submit.
   form = {
     availability: '',
     preferred_mode: 'Both',
@@ -40,6 +48,10 @@ export class VolunteerRegister implements OnInit {
       next: (res: any) => this.skills.set(res.skills),
       error: () => this.error.set('Failed to load skills.'),
     });
+  }
+
+  getFormattedAvailability(): string {
+    return `${this.selectedDay} ${this.selectedStartTime} - ${this.selectedEndTime}`;
   }
 
   toggleCategory(id: number) {
@@ -71,10 +83,12 @@ export class VolunteerRegister implements OnInit {
   onSubmit() {
     this.error.set('');
 
-    if (!this.form.availability.trim()) {
-      this.error.set('Please enter your availability.');
-      return;
+    // Optional: Basic validation for times
+    if (this.selectedStartTime >= this.selectedEndTime) {
+       this.error.set('End time must be after start time.');
+       return;
     }
+
     if (this.selectedCategories().length === 0) {
       this.error.set('Please select at least one category.');
       return;
@@ -82,8 +96,11 @@ export class VolunteerRegister implements OnInit {
 
     this.loading.set(true);
 
+    // Generate the string RIGHT NOW using the current dropdown values
+    const formattedAvailability = this.getFormattedAvailability();
+
     this.api.registerVolunteer({
-      availability: this.form.availability,
+      availability: formattedAvailability,
       preferred_mode: this.form.preferred_mode,
       bio: this.form.bio,
       category_ids: this.selectedCategories(),

@@ -7,6 +7,7 @@ import { LoginVerify } from './pages/login-verify/login-verify';
 import { Dashboard } from './pages/dashboard/dashboard';
 import { VolunteerRegister } from './pages/volunteer-register/volunteer-register';
 import { VolunteerProfile } from './pages/volunteer-profile/volunteer-profile';
+import { StudentProfile } from './pages/student-profile/student-profile'; // ← NEW
 
 import { RequestSupport } from './pages/request-support/request-support';
 import { MatchingResults } from './pages/matching-results/matching-results';
@@ -20,6 +21,8 @@ export const routes: Routes = [
   { path: 'login', component: Login },
   { path: 'login-verify', component: LoginVerify },
   { path: 'dashboard', component: Dashboard },
+  { path: 'student/profile', component: StudentProfile }, // ← NEW
+  
   { path: 'request-support', component: RequestSupport },
   { path: 'matching-results', component: MatchingResults },
   { path: 'student-requests', component: StudentRequests },

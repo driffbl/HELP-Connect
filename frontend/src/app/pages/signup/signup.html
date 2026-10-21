@@ -3,7 +3,7 @@
 <div class="page-container">
   <h1>Sign Up</h1>
 
-  <div class="error" *ngIf="error()"> {{ error() }}</div>
+  <div class="error" *ngIf="error()">⚠️ {{ error() }}</div>
 
   <form (ngSubmit)="onSubmit()">
     <label>Full Name</label>
@@ -26,15 +26,47 @@
       required
     />
 
-    <label>Password</label>
-    <input
-      type="password"
-      name="password"
-      [(ngModel)]="form.password"
-      (input)="clearError()"
-      placeholder="At least 8 characters"
-      required
-    />
+    <!-- Password with Show/Hide toggle -->
+<label>Password</label>
+<div style="position: relative; margin-bottom: 16px;">
+  <input
+    [type]="showPassword ? 'text' : 'password'"
+    name="password"
+    [(ngModel)]="form.password"
+    (input)="clearError()"
+    placeholder="At least 8 characters"
+    style="margin-bottom: 0; padding-right: 40px;"
+    required
+  />
+  <button
+    type="button"
+    (click)="showPassword = !showPassword"
+    style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; width: auto; color: #e63946; font-size: 12px; font-weight: 600;"
+  >
+    {{ showPassword ? 'Hide' : 'Show' }}
+  </button>
+</div>
+
+<!-- Confirm Password -->
+<label>Confirm Password</label>
+<div style="position: relative; margin-bottom: 16px;">
+  <input
+    [type]="showConfirmPassword ? 'text' : 'password'"
+    name="confirmPassword"
+    [(ngModel)]="form.confirmPassword"
+    (input)="clearError()"
+    placeholder="Re-enter your password"
+    style="margin-bottom: 0; padding-right: 40px;"
+    required
+  />
+  <button
+    type="button"
+    (click)="showConfirmPassword = !showConfirmPassword"
+    style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; width: auto; color: #e63946; font-size: 12px; font-weight: 600;"
+  >
+    {{ showConfirmPassword ? 'Hide' : 'Show' }}
+  </button>
+</div>
 
     <button type="submit" class="btn-primary" [disabled]="loading()">
       {{ loading() ? 'Creating account...' : 'Create Account' }}
@@ -43,5 +75,9 @@
 
   <div class="link">
     Already have an account? <a routerLink="/login">Sign In</a>
+  </div>
+
+  <div class="link">
+    <a routerLink="/forgot-password">Forgot password?</a>
   </div>
 </div>
