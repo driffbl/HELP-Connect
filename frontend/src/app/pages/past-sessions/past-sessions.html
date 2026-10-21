@@ -1,0 +1,44 @@
+<app-panel title="Past Sessions" [roleSwitch]="true">
+  @if (!signedIn()) {
+    <app-auth-notice />
+  } @else {
+    @if (role() === 'volunteer') {
+      <section class="summary" data-testid="rating-summary">
+        @if (average(); as avg) {
+          <span class="avg" data-testid="average-rating">{{ avg | number: '1.1-1' }}</span>
+          <app-star-rating [value]="avg" [readonly]="true" />
+          <span class="count" data-testid="review-count">
+            {{ reviewCount() }} {{ reviewCount() === 1 ? 'review' : 'reviews' }}
+          </span>
+        } @else {
+          <span data-testid="no-rating">No ratings yet</span>
+        }
+      </section>
+    }
+
+    @if (status() === 'error') {
+      <div class="state error" role="alert" data-testid="load-error">
+        <span>{{ error() }}</span>
+        <button type="button" data-testid="retry" (click)="retry()">Try again</button>
+      </div>
+    }
+
+    @if (rows().length > 0) {
+      @for (r of rows(); track r.session.id) {
+        <app-session-card
+          [ref]="r.ref"
+          [category]="r.session.category"
+          [details]="r.details"
+          [status]="r.status"
+          [attr.data-testid]="'past-' + r.session.id"
+        >
+          <app-session-actions [session]="r.session" [role]="role()" />
+        </app-session-card>
+      }
+    } @else if (status() === 'ready') {
+      <p class="empty" data-testid="no-sessions">No past sessions found</p>
+    } @else if (status() !== 'error') {
+      <p class="state" data-testid="loading">Loading past sessions…</p>
+    }
+  }
+</app-panel>

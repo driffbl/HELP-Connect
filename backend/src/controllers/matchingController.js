@@ -1,4 +1,7 @@
 const db = require('../config/db');
+// UC3 integration: requests and their sessions are saved together (see services/requestSyncService.js).
+const { requestSync } = require('../services/requestSyncService');
+const { sendError } = require('../utils/httpError');
 
 // 1. Find Matching Volunteers (FR17 / User Story 1 & 2)
 // Matches category, mode, and checks day availability from the student's selected date
@@ -187,19 +190,14 @@ exports.createSupportRequest = async (req, res) => {
     }
 
     try {
-        const query = `
-            INSERT INTO Support_request
-            (User_id, Volunteer_id, Category_id, Description, Preferred_date, Preferred_time, Support_mode, Request_status)
-            VALUES (?, ?, ?, ?, ?, ?, ?, 'Pending')
-        `;
-        const [result] = await db.query(query, [
-            userId, volunteerId || null, categoryId, description, preferredDate, preferredTime, supportMode
-        ]);
+        // UC3 integration: saves the request AND, when a volunteer is chosen, its Pending session (one transaction).
+        const requestId = await requestSync.createRequest({
+            userId, volunteerId, categoryId, description, preferredDate, preferredTime, supportMode
+        });
 
-        res.status(201).json({ message: 'Request created successfully', requestId: result.insertId });
+        res.status(201).json({ message: 'Request created successfully', requestId });
     } catch (error) {
-        console.error('Error creating request:', error);
-        res.status(500).json({ message: 'Database error creating request' });
+        return sendError(res, error, 'Error creating request');
     }
 };
 
@@ -278,17 +276,12 @@ exports.updateRequestStatus = async (req, res) => {
     }
 
     try {
-        const query = `UPDATE Support_request SET Request_status = ? WHERE Request_id = ?`;
-        const [result] = await db.query(query, [status, requestId]);
-
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ message: 'Request not found' });
-        }
+        // UC3 integration: also moves the request's session to Scheduled (accepted) or Cancelled (rejected).
+        await requestSync.setRequestStatus(requestId, status);
 
         res.json({ message: `Request successfully marked as ${status}` });
     } catch (error) {
-        console.error('Error updating status:', error);
-        res.status(500).json({ message: 'Database error updating status' });
+        return sendError(res, error, 'Error updating status');
     }
 };
 
@@ -302,21 +295,12 @@ exports.assignVolunteerToRequest = async (req, res) => {
     }
 
     try {
-        const query = `
-            UPDATE Support_request 
-            SET Volunteer_id = ?, Request_status = 'Pending' 
-            WHERE Request_id = ?
-        `;
-        const [result] = await db.query(query, [volunteerId, requestId]);
-
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ message: 'Request not found.' });
-        }
+        // UC3 integration: sets the volunteer AND creates (or reopens) the request's Pending session.
+        await requestSync.assignVolunteer(requestId, volunteerId);
 
         return res.status(200).json({ message: 'Volunteer assigned successfully.' });
     } catch (error) {
-        console.error('Error assigning volunteer:', error);
-        return res.status(500).json({ message: 'Database error assigning volunteer.' });
+        return sendError(res, error, 'Error assigning volunteer');
     }
 };
 
@@ -329,21 +313,12 @@ exports.reselectVolunteer = async (req, res) => {
     }
 
     try {
-        const query = `
-            UPDATE Support_request 
-            SET Volunteer_id = ?, Request_status = 'Pending', created_at = CURRENT_TIMESTAMP
-            WHERE Request_id = ?
-        `;
-        const [result] = await db.query(query, [newVolunteerId, requestId]);
-
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ message: 'Request not found.' });
-        }
+        // UC3 integration: same as assign, and the request moves to the top of the volunteer's inbox.
+        await requestSync.assignVolunteer(requestId, newVolunteerId, { refreshTimestamp: true });
 
         res.json({ message: 'Volunteer updated successfully. Status reset to Pending.' });
     } catch (error) {
-        console.error('Error reselecting volunteer:', error);
-        res.status(500).json({ message: 'Database error reselecting volunteer.' });
+        return sendError(res, error, 'Error reselecting volunteer');
     }
 };
 
@@ -353,22 +328,13 @@ exports.updateSupportRequest = async (req, res) => {
     const { categoryId, description, preferredDate, preferredTime, supportMode } = req.body;
 
     try {
-        const query = `
-            UPDATE Support_request 
-            SET Category_id = ?, Description = ?, Preferred_date = ?, Preferred_time = ?, Support_mode = ?, Request_status = 'Pending', Volunteer_id = NULL
-            WHERE Request_id = ?
-        `;
-        const [result] = await db.query(query, [
-            categoryId, description, preferredDate, preferredTime, supportMode, requestId
-        ]);
-
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ message: 'Request not found' });
-        }
+        // UC3 integration: also withdraws the request's session (the volunteer is cleared by this edit).
+        await requestSync.updateCriteria(requestId, {
+            categoryId, description, preferredDate, preferredTime, supportMode
+        });
 
         res.json({ message: 'Request criteria updated successfully', requestId });
     } catch (error) {
-        console.error('Error updating request criteria:', error);
-        res.status(500).json({ message: 'Database error updating request' });
+        return sendError(res, error, 'Error updating request criteria');
     }
 };
