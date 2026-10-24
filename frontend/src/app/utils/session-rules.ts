@@ -1,0 +1,86 @@
+import { Session, SessionStatus, UserRole } from '../models/session.model';
+
+export function sessionStart(s: Session): Date {
+  return new Date(`${s.date}T${s.time}:00`);
+}
+
+/** Pending with no response by the start time is treated as Cancelled. */
+export function isExpiredPending(s: Session, now: Date = new Date()): boolean {
+  return s.status === 'Pending' && now >= sessionStart(s);
+}
+
+/** Always display this, never the raw status. */
+export function effectiveStatus(s: Session, now: Date = new Date()): SessionStatus {
+  return isExpiredPending(s, now) ? 'Cancelled' : s.status;
+}
+
+/** The party who did NOT propose the change confirms it. */
+export function canConfirm(s: Session, role: UserRole, now: Date = new Date()): boolean {
+  return (
+    s.status === 'Pending' &&
+    !isExpiredPending(s, now) &&
+    s.proposedBy !== null &&
+    s.proposedBy !== role
+  );
+}
+
+/** Declining a Pending proposal cancels the session. */
+export function canDecline(s: Session, role: UserRole, now: Date = new Date()): boolean {
+  return canConfirm(s, role, now);
+}
+
+/**
+ * Scheduled: either side can cancel.
+ * Pending: only the party who made the request can cancel it (the other party accepts or declines instead).
+ * Completed, Cancelled and expired Pending sessions cannot be cancelled.
+ */
+export function canCancel(s: Session, role: UserRole, now: Date = new Date()): boolean {
+  if (s.status === 'Scheduled') return true;
+  return s.status === 'Pending' && !isExpiredPending(s, now) && s.proposedBy === role;
+}
+
+export function canReschedule(s: Session): boolean {
+  return s.status === 'Scheduled';
+}
+
+/** Volunteer only, Scheduled only, never before the start time. */
+export function canComplete(s: Session, role: UserRole, now: Date = new Date()): boolean {
+  return role === 'volunteer' && s.status === 'Scheduled' && now >= sessionStart(s);
+}
+
+/** Student only, Completed only, one submission per session. */
+export function canGiveFeedback(s: Session, role: UserRole, alreadyReviewed: boolean): boolean {
+  return role === 'student' && s.status === 'Completed' && !alreadyReviewed;
+}
+
+/**
+ * A student whose request was declined can pick another volunteer, as long as the requested time
+ * has not passed (the new volunteer gets the same date and time).
+ */
+export function canChooseAnotherVolunteer(
+  s: Session,
+  role: UserRole,
+  now: Date = new Date(),
+): boolean {
+  return (
+    role === 'student' &&
+    s.status === 'Cancelled' &&
+    s.requestStatus === 'Rejected' &&
+    s.requestId !== null &&
+    now < sessionStart(s)
+  );
+}
+
+/** Completed sessions and Cancelled ones (including Pending that expired) are "past". */
+export function isPast(s: Session, now: Date = new Date()): boolean {
+  const status = effectiveStatus(s, now);
+  return status === 'Completed' || status === 'Cancelled';
+}
+
+/**
+ * My Sessions shows everything except a Completed session that already has feedback.
+ * A Completed session stays until the student leaves feedback, then moves to Past Sessions only.
+ */
+export function isInMySessions(s: Session, hasFeedback: boolean, now: Date = new Date()): boolean {
+  return !(effectiveStatus(s, now) === 'Completed' && hasFeedback);
+}

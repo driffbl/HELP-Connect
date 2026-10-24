@@ -1,0 +1,25 @@
+<app-panel title="Session Details" [backLink]="backLink">
+  @if (!signedIn()) {
+    <app-auth-notice />
+  } @else {
+    @if (view(); as v) {
+      <app-session-card
+        [ref]="v.ref"
+        [category]="v.session.category"
+        [details]="v.details"
+        [status]="v.status"
+      >
+        <app-session-actions [session]="v.session" [role]="v.role" (updated)="session.set($event)" />
+      </app-session-card>
+    } @else if (loadState() === 'missing') {
+      <p class="empty" data-testid="not-found">Session not found.</p>
+    } @else if (loadState() === 'error') {
+      <div class="state error" role="alert" data-testid="load-error">
+        <span>{{ loadError() }}</span>
+        <button type="button" data-testid="retry" (click)="retry()">Try again</button>
+      </div>
+    } @else {
+      <p class="empty" data-testid="loading">Loading session…</p>
+    }
+  }
+</app-panel>

@@ -1,0 +1,45 @@
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+}
+.avg {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--title-ink, #1f2a8a);
+}
+.count {
+  color: var(--muted-ink, #6b6b6b);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.empty {
+  text-align: center;
+  color: var(--muted-ink, #6b6b6b);
+}
+.state {
+  text-align: center;
+  color: var(--muted-ink, #6b6b6b);
+}
+.state.error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  color: var(--status-cancelled, #dc2626);
+}
+.state button {
+  padding: 4px 12px;
+  border: 1px solid var(--brand, #e63946);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--brand, #e63946);
+  font-weight: 600;
+  cursor: pointer;
+}

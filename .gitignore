@@ -33,3 +33,6 @@ desktop.ini
 # Database
 *.sqlite
 *.sqlite3
+backup_before_merge.sql
+frontend/angular.json
+frontend/angular.json

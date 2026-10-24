@@ -29,6 +29,13 @@ CREATE TABLE IF NOT EXISTS Volunteer_Category (
   FOREIGN KEY (Category_id) REFERENCES Category(Category_id) ON DELETE CASCADE
 );
 
+   CREATE TABLE IF NOT EXISTS Volunteer_Skill (
+     Volunteer_id INT,
+     Skills_id INT,
+     PRIMARY KEY (Volunteer_id, Skills_id),
+     FOREIGN KEY (Volunteer_id) REFERENCES Volunteer(Volunteer_id) ON DELETE CASCADE,
+     FOREIGN KEY (Skills_id) REFERENCES Skills(Skills_id) ON DELETE CASCADE
+   );
 -- Seed categories (only inserts if they don't already exist)
 INSERT IGNORE INTO Category (Category_name) VALUES
   ('Academic Support'),

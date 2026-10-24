@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS Support_request (
     Preferred_date DATE NOT NULL,
     Preferred_time VARCHAR(50) NOT NULL,
     Support_mode ENUM('Virtual', 'Face-to-Face') NOT NULL,
-    Request_status ENUM('Pending', 'Accepted', 'Rejected') DEFAULT 'Pending',
+    Request_status ENUM('Pending', 'Accepted', 'Rejected', 'Cancelled', 'Completed') NOT NULL DEFAULT 'Pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (User_id) REFERENCES User(User_id) ON DELETE RESTRICT,
     FOREIGN KEY (Volunteer_id) REFERENCES Volunteer(Volunteer_id) ON DELETE SET NULL,

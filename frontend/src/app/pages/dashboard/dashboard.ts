@@ -4,7 +4,7 @@ import { RouterLink } from '@angular/router';
 import { Header } from '../../components/header/header';
 import { Api } from '../../services/api';
 
-@Component({
+@Component      ({
   selector: 'app-dashboard',
   imports: [CommonModule, RouterLink, Header],
   templateUrl: './dashboard.html',
