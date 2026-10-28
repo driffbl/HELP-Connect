@@ -149,3 +149,66 @@ button {
 .link a:hover {
   text-decoration: underline;
 }
+/* ─── VOLUNTEER CATEGORY/SKILL CHIPS ─── */
+.category-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 24px;
+  margin-top: 8px;
+}
+
+.category-chip {
+  padding: 8px 16px;
+  border-radius: 20px;
+  background: white;
+  color: #555;
+  border: 2px solid #ddd;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: auto;
+}
+
+.category-chip:hover {
+  border-color: #e63946;
+  color: #e63946;
+}
+
+.category-chip.selected {
+  background: #e63946;
+  color: white;
+  border-color: #e63946;
+}
+
+/* ─── PROFILE FIELDS (For View/Edit Mode) ─── */
+.profile-field {
+  margin-bottom: 20px;
+}
+
+.profile-field label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #999;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.profile-field p {
+  font-size: 15px;
+  color: #333;
+  margin-top: 4px;
+}
+
+/* ─── CATEGORY TAGS (For View Mode) ─── */
+.category-list .category-tag {
+  padding: 6px 14px;
+  background: #e63946;
+  color: white;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+}

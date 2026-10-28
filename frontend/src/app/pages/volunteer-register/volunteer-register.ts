@@ -21,16 +21,16 @@ export class VolunteerRegister implements OnInit {
   selectedCategories = signal<number[]>([]);
   selectedSkills = signal<number[]>([]);
 
-  // Availability formatting variables
+  // Availability arrays
   days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
   times = ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'];
-  selectedDay = 'Monday';
-  selectedStartTime = '14:00';
-  selectedEndTime = '16:00';
+  
+  // Array of slots: { day, startTime, endTime }
+  availabilitySlots = signal<{ day: string; startTime: string; endTime: string }[]>([
+    { day: 'Monday', startTime: '14:00', endTime: '16:00' }
+  ]);
 
-  // Leave availability empty here. We will generate it on submit.
   form = {
-    availability: '',
     preferred_mode: 'Both',
     bio: '',
   };
@@ -50,10 +50,26 @@ export class VolunteerRegister implements OnInit {
     });
   }
 
-  getFormattedAvailability(): string {
-    return `${this.selectedDay} ${this.selectedStartTime} - ${this.selectedEndTime}`;
+  // --- Availability Functions ---
+  addSlot() {
+    this.availabilitySlots.set([
+      ...this.availabilitySlots(),
+      { day: 'Monday', startTime: '14:00', endTime: '16:00' }
+    ]);
   }
 
+  removeSlot(index: number) {
+    const current = this.availabilitySlots();
+    this.availabilitySlots.set(current.filter((_, i) => i !== index));
+  }
+
+  getFormattedAvailability(): string {
+    return this.availabilitySlots()
+      .map(slot => `${slot.day} ${slot.startTime} - ${slot.endTime}`)
+      .join(', ');
+  }
+
+  // --- Toggles ---
   toggleCategory(id: number) {
     const current = this.selectedCategories();
     if (current.includes(id)) {
@@ -80,13 +96,36 @@ export class VolunteerRegister implements OnInit {
     return this.selectedSkills().includes(id);
   }
 
-  onSubmit() {
+    onSubmit() {
     this.error.set('');
 
-    // Optional: Basic validation for times
-    if (this.selectedStartTime >= this.selectedEndTime) {
-       this.error.set('End time must be after start time.');
-       return;
+    // 1. Check for duplicate slots
+    const slots = this.availabilitySlots();
+    const seen = new Set<string>();
+    
+    for (let slot of slots) {
+      // Create a unique string for this slot
+      const slotString = `${slot.day} ${slot.startTime} - ${slot.endTime}`;
+      
+      if (seen.has(slotString)) {
+        this.error.set(`Duplicate slot found: ${slotString}. Please remove or change it.`);
+        return;
+      }
+      seen.add(slotString);
+    }
+
+    // 2. Validate start time vs end time
+    for (let slot of slots) {
+      if (slot.startTime >= slot.endTime) {
+        this.error.set(`End time must be after start time for ${slot.day}.`);
+        return;
+      }
+    }
+
+    // 3. Existing validation
+    if (slots.length === 0) {
+      this.error.set('Please add at least one availability slot.');
+      return;
     }
 
     if (this.selectedCategories().length === 0) {
@@ -96,11 +135,8 @@ export class VolunteerRegister implements OnInit {
 
     this.loading.set(true);
 
-    // Generate the string RIGHT NOW using the current dropdown values
-    const formattedAvailability = this.getFormattedAvailability();
-
     this.api.registerVolunteer({
-      availability: formattedAvailability,
+      availability: this.getFormattedAvailability(),
       preferred_mode: this.form.preferred_mode,
       bio: this.form.bio,
       category_ids: this.selectedCategories(),
