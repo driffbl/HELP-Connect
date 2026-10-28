@@ -1,0 +1,30 @@
+<app-panel [title]="pageTitle()" [roleSwitch]="true">
+  @if (!signedIn()) {
+    <app-auth-notice />
+  } @else {
+    @if (status() === 'error') {
+      <div class="state error" role="alert" data-testid="load-error">
+        <span>{{ error() }}</span>
+        <button type="button" data-testid="retry" (click)="retry()">Try again</button>
+      </div>
+    }
+
+    @if (rows().length > 0) {
+      @for (r of rows(); track r.session.id) {
+        <app-session-card
+          [ref]="r.ref"
+          [category]="r.session.category"
+          [details]="r.details"
+          [status]="r.status"
+          [attr.data-testid]="'session-' + r.session.id"
+        >
+          <app-session-actions [session]="r.session" [role]="role()" />
+        </app-session-card>
+      }
+    } @else if (status() === 'ready') {
+      <p class="empty" data-testid="no-sessions">No sessions found</p>
+    } @else if (status() !== 'error') {
+      <p class="state" data-testid="loading">Loading sessions…</p>
+    }
+  }
+</app-panel>

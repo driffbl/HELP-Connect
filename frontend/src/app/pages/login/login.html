@@ -3,9 +3,8 @@
 <div class="page-container">
   <h1>Sign In</h1>
 
-  <div class="error" *ngIf="error">
-    ⚠️ {{ error }}
-  </div>
+  <!-- 1. Add () to error -->
+  <div class="error" *ngIf="error()">⚠️ {{ error() }}</div>
 
   <form (ngSubmit)="onSubmit()">
     <label>Email</label>
@@ -28,8 +27,9 @@
       required
     />
 
-    <button type="submit" class="btn-primary" [disabled]="loading">
-      {{ loading ? 'Signing in...' : 'Sign In' }}
+    <!-- 2. Add () to loading -->
+    <button type="submit" class="btn-primary" [disabled]="loading()">
+      {{ loading() ? 'Signing in...' : 'Sign In' }}
     </button>
   </form>
 

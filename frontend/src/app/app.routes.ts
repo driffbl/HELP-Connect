@@ -12,6 +12,7 @@ import { RequestSupport } from './pages/request-support/request-support';
 import { MatchingResults } from './pages/matching-results/matching-results';
 import { StudentRequests } from './pages/student-request/student-request';
 import { VolunteerInbox } from './pages/volunteer-inbox/volunteer-inbox';
+import { sessionRoutes } from './sessions.routes';
 
 export const routes: Routes = [
   { path: '', component: Home },
@@ -27,5 +28,6 @@ export const routes: Routes = [
 
   { path: 'volunteer/register', component: VolunteerRegister },
   { path: 'volunteer/profile', component: VolunteerProfile },
+  ...sessionRoutes,
   { path: '**', redirectTo: '' },
 ];

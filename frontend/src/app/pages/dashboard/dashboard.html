@@ -9,18 +9,22 @@
   <div class="success">You are signed in.</div>
 
   <div class="dashboard-grid">
-    <a routerLink="/volunteer/register" class="dash-card">
+    
+    <!-- If NOT a volunteer, show Become a Volunteer -->
+    <a *ngIf="!isVolunteer()" routerLink="/volunteer/register" class="dash-card">
       <div class="dash-icon">🤝</div>
       <h3>Become a Volunteer</h3>
       <p>Share your skills with other students</p>
     </a>
 
-    <a routerLink="/volunteer/profile" class="dash-card">
+    <!-- If ALREADY a volunteer, show View Profile -->
+    <a *ngIf="isVolunteer()" routerLink="/volunteer/profile" class="dash-card">
       <div class="dash-icon">👤</div>
-      <h3>My Volunteer Profile</h3>
-      <p>View or edit your volunteer info</p>
+      <h3>View Volunteer Profile</h3>
+      <p>See your volunteer information and skills</p>
     </a>
 
+    <!-- Home Card -->
     <a routerLink="/" class="dash-card">
       <div class="dash-icon">🏠</div>
       <h3>Home</h3>

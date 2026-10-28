@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -17,44 +17,42 @@ export class Verify {
 
   email = localStorage.getItem('pendingEmail') || '';
   code = '';
-  error = '';
-  success = '';
-  loading = false;
+  
+  error = signal('');
+  success = signal('');
+  loading = signal(false);
 
   onSubmit() {
-    this.error = '';
-    this.success = '';
+    this.error.set('');
+    this.success.set('');
 
-    // Client-side validation: must be exactly 6 digits
     if (!/^\d{6}$/.test(this.code)) {
-      this.error = 'Please enter a valid 6-digit code.';
+      this.error.set('Please enter a valid 6-digit code.');
       return;
     }
 
-    this.loading = true;
+    this.loading.set(true);
 
     this.api.verifyOTP({ email: this.email, code: this.code }).subscribe({
       next: () => {
-        this.success = 'Account verified! Redirecting to login...';
+        this.success.set('Account verified! Redirecting to login...');
         localStorage.removeItem('pendingEmail');
         setTimeout(() => this.router.navigate(['/login']), 1500);
       },
       error: (err: any) => {
         if (err.status === 0) {
-          this.error = 'Cannot reach server. Please check your connection.';
-        } else if (err.status === 404) {
-          this.error = 'User not found. Please register again.';
+          this.error.set('Cannot reach server. Please check your connection.');
         } else if (err.status === 400) {
-          this.error = err.error?.message || 'Invalid or expired code.';
+          this.error.set(err.error?.message || 'Invalid or expired code.');
         } else {
-          this.error = err.error?.message || 'Verification failed.';
+          this.error.set(err.error?.message || 'Verification failed.');
         }
-        this.loading = false;
+        this.loading.set(false);
       },
     });
   }
 
   clearError() {
-    this.error = '';
+    this.error.set('');
   }
 }

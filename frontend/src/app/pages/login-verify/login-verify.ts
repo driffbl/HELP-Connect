@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -17,12 +17,19 @@ export class LoginVerify {
 
   email = localStorage.getItem('pendingEmail') || '';
   code = '';
-  error = '';
-  loading = false;
+  
+  error = signal('');
+  loading = signal(false);
 
   onSubmit() {
-    this.error = '';
-    this.loading = true;
+    this.error.set('');
+
+    if (!/^\d{6}$/.test(this.code)) {
+      this.error.set('Please enter a valid 6-digit code.');
+      return;
+    }
+
+    this.loading.set(true);
 
     this.api.loginVerify({ email: this.email, code: this.code }).subscribe({
       next: (res: any) => {
@@ -32,9 +39,21 @@ export class LoginVerify {
         window.location.href = '/dashboard';
       },
       error: (err: any) => {
-        this.error = err.error?.message || 'Login verification failed.';
-        this.loading = false;
+        if (err.status === 0) {
+          this.error.set('Cannot reach server.');
+        } else if (err.status === 404) {
+          this.error.set('User not found.');
+        } else if (err.status === 400) {
+          this.error.set(err.error?.message || 'Invalid or expired code.');
+        } else {
+          this.error.set(err.error?.message || 'Verification failed.');
+        }
+        this.loading.set(false);
       },
     });
+  }
+
+  clearError() {
+    this.error.set('');
   }
 }

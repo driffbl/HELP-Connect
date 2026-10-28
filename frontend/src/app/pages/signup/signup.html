@@ -3,10 +3,7 @@
 <div class="page-container">
   <h1>Sign Up</h1>
 
-  <!-- Error message — shows when error is not empty -->
-  <div class="error" *ngIf="error">
-    ⚠️ {{ error }}
-  </div>
+  <div class="error" *ngIf="error()"> {{ error() }}</div>
 
   <form (ngSubmit)="onSubmit()">
     <label>Full Name</label>
@@ -39,8 +36,8 @@
       required
     />
 
-    <button type="submit" class="btn-primary" [disabled]="loading">
-      {{ loading ? 'Creating account...' : 'Create Account' }}
+    <button type="submit" class="btn-primary" [disabled]="loading()">
+      {{ loading() ? 'Creating account...' : 'Create Account' }}
     </button>
   </form>
 

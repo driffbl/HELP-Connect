@@ -1,0 +1,69 @@
+<app-panel title="Rate Your Volunteer" backLink="/sessions">
+  @if (!signedIn()) {
+    <app-auth-notice />
+  } @else if (submitted()) {
+    <section class="done" data-testid="review-success">
+      <h2>Thank you for your feedback</h2>
+      <p>Your review has been saved.</p>
+      <a class="action-btn" routerLink="/sessions" data-testid="back-to-sessions"
+        >Back to My Sessions</a
+      >
+      <a class="action-btn" routerLink="/past-sessions" data-testid="view-past-sessions"
+        >View Past Sessions</a
+      >
+    </section>
+  } @else if (session(); as s) {
+    @if (blockedReason(); as reason) {
+      <p class="blocked" data-testid="review-blocked">{{ reason }}</p>
+    } @else {
+      <section class="form" data-testid="review-form">
+        <h2>{{ s.category }}</h2>
+        <p class="meta">Session with {{ s.volunteerName }} on {{ sessionDate() }}</p>
+
+        <p class="label">Your rating (required)</p>
+        <app-star-rating [value]="rating()" (rated)="rating.set($event)" />
+
+        <label class="label" for="comment">Comments (optional)</label>
+        <textarea
+          id="comment"
+          data-testid="comment"
+          rows="4"
+          [attr.maxlength]="maxComment"
+          [value]="comment()"
+          (input)="onComment($event)"
+        ></textarea>
+        <small class="count">{{ comment().length }}/{{ maxComment }}</small>
+
+        <button
+          type="button"
+          class="action-btn"
+          data-testid="submit-review"
+          [disabled]="busy()"
+          (click)="submit()"
+        >
+          Submit review
+        </button>
+      </section>
+    }
+  } @else if (loadState() === 'missing') {
+    <p class="blocked" data-testid="not-found">Session not found.</p>
+  } @else if (loadState() === 'error') {
+    <div class="state error" role="alert" data-testid="load-error">
+      <span>{{ loadError() }}</span>
+      <button type="button" data-testid="retry" (click)="retry()">Try again</button>
+    </div>
+  } @else {
+    <p class="blocked" data-testid="loading">Loading session…</p>
+  }
+</app-panel>
+
+@if (error(); as e) {
+  <app-confirm-modal
+    title="Can't submit yet"
+    [message]="e"
+    confirmLabel="OK"
+    [showDismiss]="false"
+    (confirmed)="error.set(null)"
+    (dismissed)="error.set(null)"
+  />
+}
