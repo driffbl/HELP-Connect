@@ -13,13 +13,36 @@
         <h1 class="page-title">Available Volunteers</h1>
       </div>
 
-      <!-- Iteration 1 Placeholder: Skill Filter Bar -->
-      <div class="filter-bar">
-        <label for="skillFilter" class="filter-label">Skill:</label>
-        <div class="select-wrapper">
-          <select id="skillFilter" class="skill-dropdown" disabled title="Skill filtering active in Iteration 2">
-            <option value="">All Skills</option>
-          </select>
+      <!-- Iteration 2: Active Controls Bar (Filter by Skill & Sort) -->
+      <div class="filter-controls-bar" *ngIf="!isLoading && rawVolunteers.length > 0">
+        <!-- Skill Dropdown -->
+        <div class="control-group">
+          <label for="skillFilter" class="filter-label">Skill:</label>
+          <div class="select-wrapper">
+            <select
+              id="skillFilter"
+              class="custom-dropdown"
+              [(ngModel)]="selectedSkill"
+              (ngModelChange)="onFilterChange()">
+              <option value="">All Skills</option>
+              <option *ngFor="let s of availableSkills" [value]="s">{{ s }}</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Sort By Dropdown -->
+        <div class="control-group">
+          <label for="sortFilter" class="filter-label">Sort By:</label>
+          <div class="select-wrapper">
+            <select
+              id="sortFilter"
+              class="custom-dropdown"
+              [(ngModel)]="selectedSort"
+              (ngModelChange)="onSortChange()">
+              <option value="rating_desc">Highest Rated</option>
+              <option value="sessions_desc">Most Sessions Completed</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -29,8 +52,8 @@
         <p>Analyzing request and finding suitable volunteers...</p>
       </div>
 
-      <!-- State A: No Volunteers Found (Figure 19 / Alternative Flow 5a)[cite: 28, 29] -->
-      <div *ngIf="!isLoading && volunteers.length === 0" class="no-volunteers-container">
+      <!-- State A: No Volunteers Found -->
+      <div *ngIf="!isLoading && displayedVolunteers.length === 0" class="no-volunteers-container">
         <div class="empty-icon-wrapper">
           <svg viewBox="0 0 48 48" class="person-outline-icon">
             <path d="M24 8a8 8 0 1 0 0 16 8 8 0 0 0 0-16zm-4 8a4 4 0 1 1 8 0 4 4 0 0 1-8 0zm19 23v-1c0-4.97-4.03-9-9-9H18c-4.97 0-9 4.03-9 9v1a2 2 0 0 0 2 2h26a2 2 0 0 0 2-2zm-22-6h14c2.76 0 5 2.24 5 5H12c0-2.76 2.24-5 5-5z"/>
@@ -39,7 +62,7 @@
         <h2 class="empty-title">No available volunteers</h2>
         <p class="empty-subtext">
           Try choosing different<br>
-          modes of support, dates<br>
+          skills, modes of support, dates<br>
           or time slot
         </p>
         <button type="button" class="btn-primary mt-3" (click)="onChangeCriteria()">
@@ -47,9 +70,9 @@
         </button>
       </div>
 
-      <!-- State B: Volunteers Found Grid (Figure 18) -->
-      <div *ngIf="!isLoading && volunteers.length > 0" class="volunteers-grid">
-        <article *ngFor="let v of volunteers" class="volunteer-card">
+      <!-- State B: Volunteers Found Grid -->
+      <div *ngIf="!isLoading && displayedVolunteers.length > 0" class="volunteers-grid">
+        <article *ngFor="let v of displayedVolunteers" class="volunteer-card">
 
           <div class="avatar-container">
             <img [src]="v.avatar_url" [alt]="v.user_name" class="avatar-img" />
@@ -57,9 +80,11 @@
 
           <h3 class="volunteer-name">{{ v.user_name }}</h3>
 
-          <!-- Category Tag Badges -->
-          <div class="tags-container" *ngIf="v.categories && v.categories.length > 0">
-            <span *ngFor="let cat of v.categories" class="category-tag">#{{ cat }}</span>
+          <!-- Iteration 2: Skill Badges -->
+          <div class="skills-tags-container" *ngIf="getSkillsArray(v.skills_list).length > 0">
+            <span *ngFor="let skill of getSkillsArray(v.skills_list)" class="skill-tag">
+              #{{ skill }}
+            </span>
           </div>
 
           <!-- Bold Details Meta -->
@@ -75,9 +100,9 @@
 
           <!-- Star Rating and Count -->
           <div class="rating-row">
-            <span class="rating-value">{{ v.rating }}</span>
-            <span class="star-icon">&#9734;</span>
-            <span class="reviews-count">({{ v.completed_sessions }})</span>
+            <span class="rating-value">{{ v.rating | number:'1.1-1' }}</span>
+            <span class="star-icon">&#9733;</span>
+            <span class="reviews-count">({{ v.completed_sessions }} sessions)</span>
           </div>
 
           <!-- Select Action Trigger -->
@@ -90,7 +115,7 @@
     </div>
   </main>
 
-  <!-- Modal 1: Review & Confirm Selection[cite: 25] -->
+  <!-- Modal 1: Review & Confirm Selection -->
   <div *ngIf="showReviewModal" class="modal-backdrop">
     <div class="modal-dialog">
       <h2 class="modal-title">Confirm Selection</h2>
@@ -105,7 +130,7 @@
     </div>
   </div>
 
-  <!-- Modal 2: Success / Request Sent[cite: 25, 28] -->
+  <!-- Modal 2: Success / Request Sent -->
   <div *ngIf="showConfirmedModal" class="modal-backdrop">
     <div class="modal-dialog success-dialog">
       <h2 class="modal-title">Request Confirmed!</h2>

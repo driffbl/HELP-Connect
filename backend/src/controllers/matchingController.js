@@ -29,13 +29,22 @@ exports.findVolunteers = async (req, res) => {
                 v.Availability,
                 v.Preferred_Support_Mode,
                 v.Bio,
-                GROUP_CONCAT(DISTINCT c_all.Category_name SEPARATOR ', ') AS All_Categories
+                GROUP_CONCAT(DISTINCT c_all.Category_name SEPARATOR ', ') AS All_Categories,
+                COALESCE(GROUP_CONCAT(DISTINCT s.Skill_name SEPARATOR ', '), '') AS Skills_List,
+                COALESCE(ROUND(AVG(fb.Rating), 1), 5.0) AS Rating,
+                COUNT(DISTINCT CASE WHEN sess.Session_status = 'Completed' THEN sess.Session_id END) AS Completed_sessions
             FROM Volunteer v
                      JOIN User u ON v.User_id = u.User_id
                      JOIN Volunteer_Category vc_filter ON v.Volunteer_id = vc_filter.Volunteer_id
                      JOIN Category c_filter ON vc_filter.Category_id = c_filter.Category_id
                      JOIN Volunteer_Category vc_all ON v.Volunteer_id = vc_all.Volunteer_id
                      JOIN Category c_all ON vc_all.Category_id = c_all.Category_id
+                     LEFT JOIN volunteer_skill vs ON v.Volunteer_id = vs.Volunteer_id
+                     LEFT JOIN skills s ON vs.Skills_id = s.Skills_id
+                -- Join Support_request first, then Support_session
+                     LEFT JOIN Support_request sr ON v.Volunteer_id = sr.Volunteer_id
+                     LEFT JOIN Support_session sess ON sr.Request_id = sess.Request_id
+                     LEFT JOIN Feedback fb ON sess.Session_id = fb.Session_id
             WHERE c_filter.Category_name = ?
               AND (v.Preferred_Support_Mode = ? OR v.Preferred_Support_Mode = 'Both')
         `;
@@ -77,6 +86,28 @@ exports.findVolunteers = async (req, res) => {
     } catch (err) {
         console.error('Error in findVolunteers:', err);
         return res.status(500).json({ message: 'Server error matching volunteers.' });
+    }
+};
+
+exports.getSkillsByCategory = async (req, res) => {
+    const { category } = req.query;
+    if (!category) {
+        return res.status(400).json({ message: 'Category parameter is required.' });
+    }
+
+    try {
+        const query = `
+            SELECT s.Skills_id, s.Skill_name
+            FROM skills s
+            JOIN Category c ON s.Category_id = c.Category_id
+            WHERE c.Category_name = ?
+            ORDER BY s.Skill_name ASC
+        `;
+        const [rows] = await db.query(query, [category]);
+        return res.status(200).json(rows);
+    } catch (err) {
+        console.error('Error fetching skills:', err);
+        return res.status(500).json({ message: 'Error retrieving skills.' });
     }
 };
 
@@ -278,6 +309,30 @@ exports.updateRequestStatus = async (req, res) => {
     try {
         // UC3 integration: also moves the request's session to Scheduled (accepted) or Cancelled (rejected).
         await requestSync.setRequestStatus(requestId, status);
+
+        // Iteration 2 (FR22 / FR23): Notify the student about the volunteer's decision
+        const [rows] = await db.query(
+            `SELECT sr.User_id, c.Category_name, sess.Session_id
+             FROM Support_request sr
+             JOIN Category c ON sr.Category_id = c.Category_id
+             LEFT JOIN Support_session sess ON sr.Request_id = sess.Request_id
+             WHERE sr.Request_id = ?
+             LIMIT 1`,
+            [requestId]
+        );
+
+        if (rows && rows.length > 0) {
+            const { User_id, Category_name, Session_id } = rows[0];
+            const message = status === 'Accepted'
+                ? `Your "${Category_name}" request (#${requestId}) was Accepted! Check My Sessions.`
+                : `Your "${Category_name}" request (#${requestId}) was Rejected. You can select another volunteer.`;
+
+            await db.query(
+                `INSERT INTO Notification (User_id, Session_id, Message, Notification_status)
+                 VALUES (?, ?, ?, 'Unread')`,
+                [User_id, Session_id || null, message]
+            );
+        }
 
         res.json({ message: `Request successfully marked as ${status}` });
     } catch (error) {
