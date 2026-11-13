@@ -127,3 +127,35 @@ exports.listSkills = async (req, res) => {
     return res.status(500).json({ message: 'Server error.' });
   }
 };
+// PUT /api/volunteer/update
+exports.updateProfile = async (req, res) => {
+  const userId = req.user.User_id;
+  const { availability, preferred_mode, bio, category_ids, skill_ids } = req.body;
+
+  try {
+    const [vols] = await db.query('SELECT Volunteer_id FROM Volunteer WHERE User_id = ?', [userId]);
+    if (vols.length === 0) return res.status(404).json({ message: 'Volunteer not found.' });
+    const volunteerId = vols[0].Volunteer_id;
+
+    await db.query(
+      'UPDATE Volunteer SET Availability = ?, Preferred_Support_Mode = ?, Bio = ? WHERE Volunteer_id = ?',
+      [availability, preferred_mode, bio || null, volunteerId]
+    );
+
+    await db.query('DELETE FROM Volunteer_Category WHERE Volunteer_id = ?', [volunteerId]);
+    if (category_ids?.length > 0) {
+      const catValues = category_ids.map(cid => [volunteerId, cid]);
+      await db.query('INSERT INTO Volunteer_Category (Volunteer_id, Category_id) VALUES ?', [catValues]);
+    }
+
+    await db.query('DELETE FROM Volunteer_Skill WHERE Volunteer_id = ?', [volunteerId]);
+    if (skill_ids?.length > 0) {
+      const skillValues = skill_ids.map(sid => [volunteerId, sid]);
+      await db.query('INSERT INTO Volunteer_Skill (Volunteer_id, Skills_id) VALUES ?', [skillValues]);
+    }
+
+    return res.status(200).json({ message: 'Updated successfully!' });
+  } catch (err) {
+    return res.status(500).json({ message: 'Server error.' });
+  }
+};

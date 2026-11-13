@@ -17,22 +17,35 @@
       required
     />
 
-    <label>Password</label>
-    <input
-      type="password"
-      name="password"
-      [(ngModel)]="form.password"
-      (input)="clearError()"
-      placeholder="Your password"
-      required
-    />
+    <!-- Password with Show/Hide toggle -->
+<label>Password</label>
+<div style="position: relative; margin-bottom: 16px;">
+  <input
+    [type]="showPassword ? 'text' : 'password'"
+    name="password"
+    [(ngModel)]="form.password"
+    (input)="clearError()"
+    placeholder="Your password"
+    style="margin-bottom: 0; padding-right: 40px;"
+    required
+  />
+  <button
+    type="button"
+    (click)="showPassword = !showPassword"
+    style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; width: auto; color: #e63946; font-size: 12px; font-weight: 600; padding: 0;"
+  >
+    {{ showPassword ? 'Hide' : 'Show' }}
+  </button>
+</div>
 
     <!-- 2. Add () to loading -->
     <button type="submit" class="btn-primary" [disabled]="loading()">
       {{ loading() ? 'Signing in...' : 'Sign In' }}
     </button>
   </form>
-
+<div class="link">
+  <a routerLink="/forgot-password">Forgot password?</a>
+</div>
   <div class="link">
     Don't have an account? <a routerLink="/signup">Register</a>
   </div>

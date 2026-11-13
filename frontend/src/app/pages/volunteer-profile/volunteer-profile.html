@@ -1,67 +1,85 @@
 <app-header></app-header>
 
 <div class="page-container" style="max-width: 620px;">
-  
-  <div *ngIf="loading()" style="text-align: center; color: #666; padding: 40px;">
-    Loading profile...
-  </div>
-
-  <div *ngIf="!loading() && error()" class="error">⚠️ {{ error() }}</div>
+  <div *ngIf="loading()" style="text-align: center; color: #666; padding: 40px;">Loading profile...</div>
+  <div class="error" *ngIf="error()"> {{ error() }}</div>
+  <div class="success" *ngIf="success()">✓ {{ success() }}</div>
 
   <div *ngIf="!loading() && volunteer()">
     <h1>Volunteer Profile</h1>
 
-    <div class="success">You are a registered volunteer </div>
+    <!-- VIEW MODE -->
+    <div *ngIf="!isEditing()">
 
-    <div class="profile-field">
-      <label>Name</label>
-      <p>{{ volunteer().User_name }}</p>
-    </div>
-
-    <div class="profile-field">
-      <label>Email</label>
-      <p>{{ volunteer().Email }}</p>
-    </div>
-
-    <div class="profile-field">
-      <label>Availability</label>
-      <p>{{ volunteer().Availability }}</p>
-    </div>
-
-    <div class="profile-field">
-      <label>Preferred Mode</label>
-      <p>{{ volunteer().Preferred_Mode }}</p>
-    </div>
-
-    <div class="profile-field" *ngIf="volunteer().Bio">
-      <label>Bio</label>
-      <p>{{ volunteer().Bio }}</p>
-    </div>
-
-    <!-- Categories -->
-    <div class="profile-field">
-      <label>Support Categories</label>
-      <div class="category-list">
-        <span *ngFor="let cat of volunteer().categories" class="category-tag">
-          {{ cat.Category_name }}
-        </span>
+      <div class="profile-field"><label>Name</label><p>{{ volunteer().User_name }}</p></div>
+      <div class="profile-field"><label>Email</label><p>{{ volunteer().Email }}</p></div>
+      <div class="profile-field"><label>Availability</label><p>{{ volunteer().Availability }}</p></div>
+      <div class="profile-field"><label>Preferred Mode</label><p>{{ volunteer().Preferred_Mode }}</p></div>
+      <div class="profile-field" *ngIf="volunteer().Bio"><label>Bio</label><p>{{ volunteer().Bio }}</p></div>
+      
+      <div class="profile-field">
+        <label>Categories</label>
+        <div class="category-list">
+          <span *ngFor="let cat of volunteer().categories" class="category-tag">{{ cat.Category_name }}</span>
+        </div>
       </div>
-    </div>
 
-    <!-- Skills -->
-    <div class="profile-field" *ngIf="volunteer().skills && volunteer().skills.length > 0">
-      <label>Specific Skills</label>
-      <div class="category-list">
-        <span *ngFor="let skill of volunteer().skills" class="category-tag">
-          {{ skill.Skill_name }}
-        </span>
+      <div class="profile-field" *ngIf="volunteer().skills?.length > 0">
+        <label>Skills</label>
+        <div class="category-list">
+          <span *ngFor="let skill of volunteer().skills" class="category-tag">{{ skill.Skill_name }}</span>
+        </div>
       </div>
+
+      <button class="btn-primary" (click)="startEditing()" style="margin-top: 24px;">Edit Profile</button>
+      <a routerLink="/dashboard" style="text-decoration: none;">
+        <button class="btn-outline" style="margin-top: 12px;">Back to Dashboard</button>
+      </a>
     </div>
 
-    <a routerLink="/dashboard" style="text-decoration: none;">
-      <button class="btn-outline" style="margin-top: 24px;">
-        Back to Dashboard
-      </button>
-    </a>
+    <!-- EDIT MODE -->
+    <div *ngIf="isEditing()">
+      <div class="profile-field">
+        <label>Weekly Availability</label>
+        <input type="text" [(ngModel)]="editForm.availability" placeholder="e.g. Monday 14:00 - 16:00" />
+      </div>
+
+      <div class="profile-field">
+        <label>Preferred Mode</label>
+        <select [(ngModel)]="editForm.preferred_mode">
+          <option value="Virtual">Virtual</option>
+          <option value="Face-to-Face">Face-to-Face</option>
+          <option value="Both">Both</option>
+        </select>
+      </div>
+
+      <div class="profile-field">
+        <label>Bio</label>
+        <textarea [(ngModel)]="editForm.bio" rows="3"></textarea>
+      </div>
+
+      <div class="profile-field">
+        <label>Categories</label>
+        <div class="category-list">
+          <button type="button" *ngFor="let cat of categories()" class="category-chip"
+                  [class.selected]="isSelected(cat.Category_id)" (click)="toggleCategory(cat.Category_id)">
+            #{{ cat.Category_name }}
+          </button>
+        </div>
+      </div>
+
+      <div class="profile-field">
+        <label>Skills</label>
+        <div class="category-list">
+          <button type="button" *ngFor="let skill of skills()" class="category-chip"
+                  [class.selected]="isSkillSelected(skill.Skills_id)" (click)="toggleSkill(skill.Skills_id)">
+            #{{ skill.Skill_name }}
+          </button>
+        </div>
+      </div>
+
+      <button class="btn-primary" (click)="saveChanges()" style="margin-top: 24px;">Save Changes</button>
+      <button class="btn-outline" (click)="cancelEditing()" style="margin-top: 12px;">Cancel</button>
+    </div>
   </div>
 </div>

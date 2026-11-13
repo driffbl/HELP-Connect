@@ -213,3 +213,87 @@ exports.loginVerify = async (req, res) => {
     return res.status(500).json({ message: 'Server error. Please try again.' });
   }
 };
+
+// 1. POST /api/auth/forgot-password
+exports.forgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ message: 'Email is required.' });
+  }
+
+  try {
+    const [users] = await db.query('SELECT User_id FROM User WHERE Email = ?', [email]);
+    if (users.length === 0) {
+      return res.status(404).json({ message: 'User with this email does not exist.' });
+    }
+
+    const user = users[0];
+    const otp = generateOTP(); // Reuse your existing OTP generator
+    const expiry = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+
+    await db.query(
+      'UPDATE User SET Verification_code = ?, Verification_expiry = ? WHERE User_id = ?',
+      [otp, expiry, user.User_id]
+    );
+
+    await sendVerificationEmail(email, otp); // Reuse your mock email sender
+
+    return res.status(200).json({
+      message: 'Password reset code sent to your email.',
+      email,
+    });
+  } catch (err) {
+    console.error('Forgot password error:', err);
+    return res.status(500).json({ message: 'Server error.' });
+  }
+};
+
+// 2. POST /api/auth/reset-password
+exports.resetPassword = async (req, res) => {
+  const { email, code, newPassword } = req.body;
+
+  if (!email || !code || !newPassword) {
+    return res.status(400).json({ message: 'All fields are required.' });
+  }
+
+  if (newPassword.length < 8) {
+    return res.status(400).json({ message: 'Password must be at least 8 characters.' });
+  }
+
+  try {
+    const [users] = await db.query(
+      'SELECT User_id, Verification_code, Verification_expiry FROM User WHERE Email = ?',
+      [email]
+    );
+
+    if (users.length === 0) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    const user = users[0];
+
+    if (user.Verification_code !== code) {
+      return res.status(400).json({ message: 'Invalid reset code.' });
+    }
+
+    const now = new Date();
+    const expiry = new Date(user.Verification_expiry);
+    if (now > expiry) {
+      return res.status(400).json({ message: 'Reset code has expired.' });
+    }
+
+    const bcrypt = require('bcrypt');
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await db.query(
+      'UPDATE User SET Password = ?, Verification_code = NULL, Verification_expiry = NULL WHERE User_id = ?',
+      [hashedPassword, user.User_id]
+    );
+
+    return res.status(200).json({ message: 'Password has been reset successfully. You can now log in.' });
+  } catch (err) {
+    console.error('Reset password error:', err);
+    return res.status(500).json({ message: 'Server error.' });
+  }
+};
