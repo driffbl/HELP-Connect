@@ -78,4 +78,7 @@ resetPassword(data: { email: string; code: string; newPassword: string }): Obser
   }): Observable<any> {
     return this.http.put(`${this.baseUrl}/volunteer/update`, data);
   }
+resendVerification(data: { email: string }): Observable<any> {
+  return this.http.post(`${this.baseUrl}/auth/resend-verification`, data);
+}
 }

@@ -19,10 +19,13 @@ export class LoginVerify {
   code = '';
   
   error = signal('');
+  success = signal('');
   loading = signal(false);
+  resending = signal(false);
 
   onSubmit() {
     this.error.set('');
+    this.success.set('');
 
     if (!/^\d{6}$/.test(this.code)) {
       this.error.set('Please enter a valid 6-digit code.');
@@ -40,16 +43,33 @@ export class LoginVerify {
       },
       error: (err: any) => {
         if (err.status === 0) {
-          this.error.set('Cannot reach server.');
+          this.error.set('Cannot reach server. Please check your connection.');
         } else if (err.status === 404) {
           this.error.set('User not found.');
         } else if (err.status === 400) {
           this.error.set(err.error?.message || 'Invalid or expired code.');
         } else {
-          this.error.set(err.error?.message || 'Verification failed.');
+          this.error.set(err.error?.message || 'Login verification failed.');
         }
         this.loading.set(false);
       },
+    });
+  }
+
+  resendCode() {
+    this.error.set('');
+    this.success.set('');
+    this.resending.set(true);
+
+    this.api.resendVerification({ email: this.email }).subscribe({
+      next: () => {
+        this.success.set('A new login code has been sent to your email!');
+        this.resending.set(false);
+      },
+      error: (err: any) => {
+        this.error.set(err.error?.message || 'Failed to resend code.');
+        this.resending.set(false);
+      }
     });
   }
 

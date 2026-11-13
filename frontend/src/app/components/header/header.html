@@ -11,7 +11,11 @@
     <a routerLink="/dashboard" *ngIf="isLoggedIn">Dashboard</a>
     <a routerLink="/sessions" *ngIf="isLoggedIn">My Sessions</a>
     <a routerLink="/past-sessions" *ngIf="isLoggedIn">Past Sessions</a>
-    <a routerLink="/volunteer/register" *ngIf="isLoggedIn">Volunteer</a>
+    
+    <!-- SMART VOLUNTEER LINK -->
+    <a [routerLink]="isVolunteer() ? '/volunteer/profile' : '/volunteer/register'" *ngIf="isLoggedIn">
+      {{ isVolunteer() ? 'My Profile' : 'Volunteer' }}
+    </a>
 
     <!-- Notification Bell & System Feed Dropdown -->
     <div class="notification-wrapper" *ngIf="isLoggedIn" (click)="$event.stopPropagation()">

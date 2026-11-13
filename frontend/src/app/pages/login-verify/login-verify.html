@@ -7,6 +7,7 @@
   </p>
 
   <div class="error" *ngIf="error()"> {{ error() }}</div>
+  <div class="success" *ngIf="success()">✓ {{ success() }}</div>
 
   <form (ngSubmit)="onSubmit()">
     <label>Login Code</label>
@@ -20,8 +21,15 @@
       required
     />
 
-    <button type="submit" class="btn-primary" [disabled]="loading()">
+    <button type="submit" class="btn-primary" [disabled]="loading() || resending()">
       {{ loading() ? 'Verifying...' : 'Confirm' }}
     </button>
   </form>
+
+  <div class="link">
+    Didn't receive a code? 
+    <a (click)="resendCode()" style="cursor: pointer;">
+      {{ resending() ? 'Sending...' : 'Resend Code' }}
+    </a>
+  </div>
 </div>
