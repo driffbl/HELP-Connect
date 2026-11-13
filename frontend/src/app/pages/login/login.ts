@@ -17,13 +17,14 @@ export class Login {
 
   form = { email: '', password: '' };
   
-  // 1. Change to signals
   error = signal('');
   loading = signal(false);
-showPassword = false;
+  showPassword = false;
+  showResend = signal(false); // NEW: Track if we should show the resend button
 
   onSubmit() {
     this.error.set('');
+    this.showResend.set(false); // Reset resend state on new submit
 
     if (!this.form.email.trim()) {
       this.error.set('Please enter your email.');
@@ -55,15 +56,30 @@ showPassword = false;
           this.error.set('Invalid email or password. Please try again.');
         } else if (err.status === 403) {
           this.error.set('Your account is not active. Please verify your email first.');
+          this.showResend.set(true); // NEW: Enable the resend button
         } else {
           this.error.set(err.error?.message || 'Login failed. Please try again.');
         }
-        this.loading.set(false); // 2. Notice the .set()
+        this.loading.set(false);
       },
     });
   }
 
   clearError() {
-    this.error.set(''); // 3. Notice the .set()
+    this.error.set('');
+    this.showResend.set(false);
+  }
+
+  // NEW: Function to resend the verification code
+  resendVerification() {
+    this.api.forgotPassword({ email: this.form.email }).subscribe({
+      next: () => {
+        localStorage.setItem('pendingEmail', this.form.email);
+        this.router.navigate(['/verify']);
+      },
+      error: (err: any) => {
+        this.error.set(err.error?.message || 'Failed to resend code.');
+      }
+    });
   }
 }
