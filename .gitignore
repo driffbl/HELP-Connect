@@ -36,3 +36,5 @@ desktop.ini
 backup_before_merge.sql
 frontend/angular.json
 frontend/angular.json
+credentials.json
+token.json
