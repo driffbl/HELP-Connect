@@ -7,6 +7,7 @@ export interface Volunteer {
   support_category:
     'Academic Support' | 'Technology Support' | 'New Student Support' | 'General Student Support';
   skills_description: string;
+  skills_list?: string;
   preferred_mode: 'Virtual' | 'Face-to-Face' | 'Both';
   availability_notes: string;
   all_categories?: string;

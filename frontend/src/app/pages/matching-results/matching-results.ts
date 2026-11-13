@@ -1,5 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatchingService } from '../../services/matching.service';
 import { Volunteer } from '../../models/volunteer.model';
@@ -8,21 +9,29 @@ import { Header } from '../../components/header/header';
 @Component({
   selector: 'app-matching-results',
   standalone: true,
-  imports: [CommonModule, Header],
+  imports: [CommonModule, FormsModule, Header],
   templateUrl: './matching-results.html',
   styleUrls: ['./matching-results.css'],
 })
 export class MatchingResults implements OnInit {
-  volunteers: Volunteer[] = [];
+  rawVolunteers: Volunteer[] = [];
+  displayedVolunteers: Volunteer[] = [];
+  availableSkills: string[] = [];
+
   isLoading: boolean = true;
 
-  // Search parameters forwarded from the request form
+  // Search parameters
   searchCategory: string = '';
   searchDescription: string = '';
   searchMode: string = '';
   searchDate: string = '';
   searchTime: string = '';
   requestId: number | null = null;
+  previousVolunteerId: number | null = null;
+
+  // Filter & Sort State (Iteration 2)
+  selectedSkill: string = '';
+  selectedSort: string = 'rating_desc'; // Default: Highest Rated
 
   showReviewModal: boolean = false;
   showConfirmedModal: boolean = false;
@@ -43,13 +52,27 @@ export class MatchingResults implements OnInit {
       this.searchDate = params['date'] || '';
       this.searchTime = params['time'] || '';
       this.requestId = params['requestId'] ? Number(params['requestId']) : null;
+      this.previousVolunteerId = params['previousVolunteerId']
+        ? Number(params['previousVolunteerId'])
+        : null;
 
       if (!this.searchCategory || !this.searchMode) {
         this.router.navigate(['/request-support']);
         return;
       }
 
+      this.loadSkills();
       this.fetchMatchingVolunteers();
+    });
+  }
+
+  loadSkills(): void {
+    this.matchingService.getSkillsByCategory(this.searchCategory).subscribe({
+      next: (skills) => {
+        this.availableSkills = skills.map((s) => s.Skill_name);
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Failed to load category skills:', err),
     });
   }
 
@@ -59,17 +82,58 @@ export class MatchingResults implements OnInit {
       .findVolunteers(this.searchCategory, this.searchMode, this.searchDate, this.searchTime)
       .subscribe({
         next: (data) => {
-          this.volunteers = Array.isArray(data) ? data : [];
+          let list = Array.isArray(data) ? data : [];
+
+          // Alternative Flow 6a: Exclude previously rejected volunteer if reselecting
+          if (this.requestId && this.previousVolunteerId) {
+            list = list.filter((v) => v.volunteer_id !== this.previousVolunteerId);
+          }
+
+          this.rawVolunteers = list;
+          this.applyFilterAndSort();
           this.isLoading = false;
           this.cdr.detectChanges();
         },
         error: (err) => {
           console.error('Error fetching volunteers:', err);
-          this.volunteers = [];
+          this.rawVolunteers = [];
+          this.displayedVolunteers = [];
           this.isLoading = false;
           this.cdr.detectChanges();
         },
       });
+  }
+
+  // Iteration 2: Skill Filter & Sorting
+  applyFilterAndSort(): void {
+    let result = [...this.rawVolunteers];
+
+    // 1. Skill Filtering
+    if (this.selectedSkill) {
+      result = result.filter(
+        (v) =>
+          v.skills_list && v.skills_list.toLowerCase().includes(this.selectedSkill.toLowerCase()),
+      );
+    }
+
+    // 2. Sorting by Rating or Completed Sessions (User Story 6)
+    if (this.selectedSort === 'rating_desc') {
+      result.sort((a, b) => (Number(b.rating) || 0) - (Number(a.rating) || 0));
+    } else if (this.selectedSort === 'sessions_desc') {
+      result.sort(
+        (a, b) => (Number(b.completed_sessions) || 0) - (Number(a.completed_sessions) || 0),
+      );
+    }
+
+    this.displayedVolunteers = result;
+  }
+
+  onFilterChange(): void {
+    this.applyFilterAndSort();
+  }
+
+  onSortChange(): void {
+    this.applyFilterAndSort();
   }
 
   initiateSelection(volunteer: Volunteer, event?: Event): void {
@@ -86,12 +150,10 @@ export class MatchingResults implements OnInit {
     this.cdr.detectChanges();
   }
 
-  // Phase 2: Creates the database record once a volunteer is confirmed
   confirmSelection(event?: Event): void {
     if (event) event.stopPropagation();
     if (!this.selectedVolunteer) return;
 
-    // Path A: Reselecting an alternative volunteer for an existing request
     if (this.requestId) {
       this.matchingService
         .assignVolunteer(this.requestId, this.selectedVolunteer.volunteer_id)
@@ -103,8 +165,7 @@ export class MatchingResults implements OnInit {
           },
           error: (err) => {
             console.error('Error reassigning volunteer:', err);
-            // UC3 integration: show the server's reason (slot already booked, request already accepted, ...).
-            alert(err?.error?.message || 'Failed to update volunteer assignment in database.');
+            alert(err?.error?.message || 'Failed to update volunteer assignment.');
           },
         });
       return;
@@ -113,7 +174,7 @@ export class MatchingResults implements OnInit {
     const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
     const loggedInStudentId = Number(currentUser.User_id || currentUser.user_id || 1);
     const loggedInStudentName = currentUser.User_name || 'Student';
-    // Path B: Brand-new support request (Initial creation with chosen volunteer)
+
     const newRequestPayload = {
       student_id: loggedInStudentId,
       student_name: loggedInStudentName,
@@ -135,7 +196,6 @@ export class MatchingResults implements OnInit {
       },
       error: (err) => {
         console.error('Failed to create support request:', err);
-        // UC3 integration: show the server's reason (time passed, slot already booked, ...) when it sends one.
         alert(err?.error?.message || 'Database error creating request.');
       },
     });
@@ -149,7 +209,6 @@ export class MatchingResults implements OnInit {
     this.router.navigate(['/student-requests']);
   }
 
-  // Returns to the form while preserving previous user inputs
   onGoBack(): void {
     if (this.requestId) {
       this.router.navigate(['/student-requests']);
@@ -168,5 +227,13 @@ export class MatchingResults implements OnInit {
         time: this.searchTime,
       },
     });
+  }
+
+  getSkillsArray(skillsString?: string): string[] {
+    if (!skillsString) return [];
+    return skillsString
+      .split(',')
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
   }
 }

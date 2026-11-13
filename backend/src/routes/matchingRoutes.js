@@ -4,6 +4,7 @@ const matchingController = require('../controllers/matchingController');
 
 // Find matching volunteers
 router.get('/volunteers', matchingController.findVolunteers);
+router.get('/skills', matchingController.getSkillsByCategory);
 
 // Student creates a new request
 router.post('/requests', matchingController.createSupportRequest);
