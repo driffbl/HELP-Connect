@@ -297,3 +297,48 @@ exports.resetPassword = async (req, res) => {
     return res.status(500).json({ message: 'Server error.' });
   }
 };
+
+// POST /api/auth/resend-verification
+exports.resendVerification = async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ message: 'Email is required.' });
+  }
+
+  try {
+    // Check if user exists and is not yet active
+    const [users] = await db.query(
+      'SELECT User_id, Account_status FROM User WHERE Email = ?',
+      [email]
+    );
+
+    if (users.length === 0) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    const user = users[0];
+
+    if (user.Account_status === 'Active') {
+      return res.status(400).json({ message: 'Account is already verified.' });
+    }
+
+    // Generate a fresh OTP and expiry
+    const otp = generateOTP();
+    const expiry = new Date(Date.now() + 5 * 60 * 1000);
+
+    // Save new OTP to database
+    await db.query(
+      'UPDATE User SET Verification_code = ?, Verification_expiry = ? WHERE User_id = ?',
+      [otp, expiry, user.User_id]
+    );
+
+    // Send the real email
+    await sendVerificationEmail(email, otp);
+
+    return res.status(200).json({ message: 'A new verification code has been sent to your email.' });
+  } catch (err) {
+    console.error('Resend verification error:', err);
+    return res.status(500).json({ message: 'Server error.' });
+  }
+};

@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -11,7 +11,7 @@ import { Header } from '../../components/header/header';
   templateUrl: './verify.html',
   styleUrl: './verify.css',
 })
-export class Verify {
+export class Verify implements OnInit {
   private api = inject(Api);
   private router = inject(Router);
 
@@ -21,6 +21,14 @@ export class Verify {
   error = signal('');
   success = signal('');
   loading = signal(false);
+  resending = signal(false);
+
+  ngOnInit() {
+    // FIX: If there is no email, redirect back to signup
+    if (!this.email) {
+      this.router.navigate(['/signup']);
+    }
+  }
 
   onSubmit() {
     this.error.set('');
@@ -41,7 +49,7 @@ export class Verify {
       },
       error: (err: any) => {
         if (err.status === 0) {
-          this.error.set('Cannot reach server. Please check your connection.');
+          this.error.set('Cannot reach server.');
         } else if (err.status === 400) {
           this.error.set(err.error?.message || 'Invalid or expired code.');
         } else {
@@ -49,6 +57,23 @@ export class Verify {
         }
         this.loading.set(false);
       },
+    });
+  }
+
+  resendCode() {
+    this.error.set('');
+    this.success.set('');
+    this.resending.set(true);
+
+    this.api.resendVerification({ email: this.email }).subscribe({
+      next: () => {
+        this.success.set('A new code has been sent to your email!');
+        this.resending.set(false);
+      },
+      error: (err: any) => {
+        this.error.set(err.error?.message || 'Failed to resend code.');
+        this.resending.set(false);
+      }
     });
   }
 

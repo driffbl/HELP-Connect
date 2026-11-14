@@ -18,9 +18,11 @@ export class ResetPassword {
   email = localStorage.getItem('resetEmail') || '';
   code = '';
   newPassword = '';
+  
   error = signal('');
   success = signal('');
   loading = signal(false);
+  resending = signal(false);
 
   onSubmit() {
     this.error.set('');
@@ -47,6 +49,24 @@ export class ResetPassword {
         this.error.set(err.error?.message || 'Password reset failed.');
         this.loading.set(false);
       },
+    });
+  }
+
+  // ADDED: Function to resend the OTP
+  resendCode() {
+    this.error.set('');
+    this.success.set('');
+    this.resending.set(true);
+
+    this.api.forgotPassword({ email: this.email }).subscribe({
+      next: () => {
+        this.success.set('A new OTP has been sent to your email!');
+        this.resending.set(false);
+      },
+      error: (err: any) => {
+        this.error.set(err.error?.message || 'Failed to resend code.');
+        this.resending.set(false);
+      }
     });
   }
 }
