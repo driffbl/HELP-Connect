@@ -3,8 +3,19 @@
 <div class="page-container">
   <h1>Sign In</h1>
 
-  <!-- 1. Add () to error -->
-  <div class="error" *ngIf="error()">⚠️ {{ error() }}</div>
+  <!-- Updated Error Block with Resend Link -->
+  <div class="error" *ngIf="error()">
+    <p style="margin-bottom: 4px;"> {{ error() }}</p>
+    
+    <!-- Text link for resending the code -->
+    <a 
+      *ngIf="showResend()" 
+      (click)="resendVerification()"
+      style="color: #d32f2f; text-decoration: underline; cursor: pointer; font-size: 14px; font-weight: 600; display: inline-block; margin-top: 4px;"
+    >
+      Resend verification code
+    </a>
+  </div>
 
   <form (ngSubmit)="onSubmit()">
     <label>Email</label>
@@ -18,21 +29,33 @@
     />
 
     <label>Password</label>
-    <input
-      type="password"
-      name="password"
-      [(ngModel)]="form.password"
-      (input)="clearError()"
-      placeholder="Your password"
-      required
-    />
+    <div style="position: relative; margin-bottom: 16px;">
+      <input
+        [type]="showPassword ? 'text' : 'password'"
+        name="password"
+        [(ngModel)]="form.password"
+        (input)="clearError()"
+        placeholder="Your password"
+        style="margin-bottom: 0; padding-right: 40px;"
+        required
+      />
+      <button
+        type="button"
+        (click)="showPassword = !showPassword"
+        style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; width: auto; color: #e63946; font-size: 12px; font-weight: 600; padding: 0;"
+      >
+        {{ showPassword ? 'Hide' : 'Show' }}
+      </button>
+    </div>
 
-    <!-- 2. Add () to loading -->
     <button type="submit" class="btn-primary" [disabled]="loading()">
       {{ loading() ? 'Signing in...' : 'Sign In' }}
     </button>
   </form>
 
+  <div class="link">
+    <a routerLink="/forgot-password">Forgot password?</a>
+  </div>
   <div class="link">
     Don't have an account? <a routerLink="/signup">Register</a>
   </div>

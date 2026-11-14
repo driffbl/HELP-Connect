@@ -62,4 +62,23 @@ export class Api {
   getVolunteerProfile(): Observable<any> {
     return this.http.get(`${this.baseUrl}/volunteer/me`);
   }
+forgotPassword(data: { email: string }): Observable<any> {
+  return this.http.post(`${this.baseUrl}/auth/forgot-password`, data);
+}
+
+resetPassword(data: { email: string; code: string; newPassword: string }): Observable<any> {
+  return this.http.post(`${this.baseUrl}/auth/reset-password`, data);
+}
+  updateVolunteer(data: {
+    availability: string;
+    preferred_mode: string;
+    bio?: string;
+    category_ids: number[];
+    skill_ids?: number[];
+  }): Observable<any> {
+    return this.http.put(`${this.baseUrl}/volunteer/update`, data);
+  }
+resendVerification(data: { email: string }): Observable<any> {
+  return this.http.post(`${this.baseUrl}/auth/resend-verification`, data);
+}
 }

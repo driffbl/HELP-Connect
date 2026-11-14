@@ -3,18 +3,43 @@
 <div class="page-container" style="max-width: 620px;">
   <h1>Volunteer Registration</h1>
 
-  <div class="error" *ngIf="error()">⚠️ {{ error() }}</div>
+  <div class="error" *ngIf="error()"> {{ error() }}</div>
 
   <form (ngSubmit)="onSubmit()">
+    
+    <!-- MULTI-SLOT AVAILABILITY -->
     <label>Weekly Availability</label>
-    <input
-      type="text"
-      name="availability"
-      [(ngModel)]="form.availability"
-      placeholder="e.g. Mon/Wed 14:00-16:00"
-      required
-    />
+    <p class="helper-text">Add all the time slots you are free to volunteer.</p>
 
+    <div *ngFor="let slot of availabilitySlots(); let i = index" 
+         style="display: flex; gap: 10px; margin-bottom: 12px; align-items: center;">
+      
+      <select [(ngModel)]="slot.day" name="day{{i}}" style="flex: 1; margin-bottom: 0;">
+        <option *ngFor="let day of days" [value]="day">{{ day }}</option>
+      </select>
+
+      <select [(ngModel)]="slot.startTime" name="start{{i}}" style="flex: 1; margin-bottom: 0;">
+        <option *ngFor="let time of times" [value]="time">{{ time }}</option>
+      </select>
+
+      <span style="font-weight: bold; color: #666;">to</span>
+
+      <select [(ngModel)]="slot.endTime" name="end{{i}}" style="flex: 1; margin-bottom: 0;">
+        <option *ngFor="let time of times" [value]="time">{{ time }}</option>
+      </select>
+
+      <button type="button" (click)="removeSlot(i)" 
+              style="background: none; border: none; color: #d32f2f; font-size: 18px; cursor: pointer; padding: 0; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; flex-shrink: 0;">
+        ✕
+      </button>
+    </div>
+
+    <button type="button" (click)="addSlot()" 
+            style="background: white; color: #e63946; border: 1px dashed #e63946; border-radius: 8px; padding: 10px; width: 100%; margin-bottom: 24px; cursor: pointer; font-weight: 600;">
+      + Add another time slot
+    </button>
+
+    <!-- PREFERRED MODE -->
     <label>Preferred Support Mode</label>
     <select name="preferred_mode" [(ngModel)]="form.preferred_mode">
       <option value="Virtual">Virtual</option>
@@ -22,55 +47,40 @@
       <option value="Both">Both</option>
     </select>
 
+    <!-- BIO -->
     <label>Short Bio (Optional)</label>
-    <textarea
-      name="bio"
-      [(ngModel)]="form.bio"
-      rows="3"
-      placeholder="Tell students about yourself..."
-    ></textarea>
+    <textarea name="bio" [(ngModel)]="form.bio" rows="4" placeholder="Tell students about yourself..."></textarea>
 
-    <!-- Categories -->
+    <!-- CATEGORIES -->
     <label>Support Categories</label>
     <p class="helper-text">Select the categories you're confident in helping with.</p>
 
-    <div *ngIf="categories().length === 0" class="loading-text">
+    <div *ngIf="categories().length === 0" style="text-align: center; color: #888; padding: 20px;">
       Loading categories...
     </div>
 
     <div class="category-list" *ngIf="categories().length > 0">
-      <button
-        type="button"
-        *ngFor="let cat of categories()"
-        class="category-chip"
-        [class.selected]="isSelected(cat.Category_id)"
-        (click)="toggleCategory(cat.Category_id)"
-      >
+      <button type="button" *ngFor="let cat of categories()" class="category-chip"
+              [class.selected]="isSelected(cat.Category_id)" (click)="toggleCategory(cat.Category_id)">
         #{{ cat.Category_name }}
       </button>
     </div>
 
-    <!-- Skills -->
+    <!-- SKILLS -->
     <label>Specific Skills</label>
     <p class="helper-text">Select specific skills you are confident in offering support for.</p>
 
-    <div *ngIf="skills().length === 0" class="loading-text">
+    <div *ngIf="skills().length === 0" style="text-align: center; color: #888; padding: 20px;">
       Loading skills...
     </div>
 
     <div class="category-list" *ngIf="skills().length > 0">
-      <button
-        type="button"
-        *ngFor="let skill of skills()"
-        class="category-chip"
-        [class.selected]="isSkillSelected(skill.Skills_id)"
-        (click)="toggleSkill(skill.Skills_id)"
-      >
+      <button type="button" *ngFor="let skill of skills()" class="category-chip"
+              [class.selected]="isSkillSelected(skill.Skills_id)" (click)="toggleSkill(skill.Skills_id)">
         #{{ skill.Skill_name }}
       </button>
     </div>
 
-    <!-- Submit -->
     <button type="submit" class="btn-primary" [disabled]="loading()" style="margin-top: 24px;">
       {{ loading() ? 'Registering...' : 'Confirm' }}
     </button>

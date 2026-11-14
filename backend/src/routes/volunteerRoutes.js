@@ -3,11 +3,9 @@ const router = express.Router();
 const volunteerController = require('../controllers/volunteerController');
 const authMiddleware = require('../middleware/authMiddleware');
 
-// Public
 router.get('/categories', volunteerController.listCategories);
 router.get('/skills', volunteerController.listSkills);
-
-// Protected
+router.put('/update', authMiddleware, volunteerController.updateProfile);
 router.post('/register', authMiddleware, volunteerController.register);
 router.get('/me', authMiddleware, volunteerController.getProfile);
 

@@ -7,7 +7,9 @@ import { LoginVerify } from './pages/login-verify/login-verify';
 import { Dashboard } from './pages/dashboard/dashboard';
 import { VolunteerRegister } from './pages/volunteer-register/volunteer-register';
 import { VolunteerProfile } from './pages/volunteer-profile/volunteer-profile';
-
+import { StudentProfile } from './pages/student-profile/student-profile'; 
+import { ForgotPassword } from './pages/forgot-password/forgot-password';
+import { ResetPassword } from './pages/reset-password/reset-password';
 import { RequestSupport } from './pages/request-support/request-support';
 import { MatchingResults } from './pages/matching-results/matching-results';
 import { StudentRequests } from './pages/student-request/student-request';
@@ -21,6 +23,9 @@ export const routes: Routes = [
   { path: 'login', component: Login },
   { path: 'login-verify', component: LoginVerify },
   { path: 'dashboard', component: Dashboard },
+  { path: 'student/profile', component: StudentProfile }, 
+  { path: 'forgot-password', component: ForgotPassword },
+{ path: 'reset-password', component: ResetPassword },
   { path: 'request-support', component: RequestSupport },
   { path: 'matching-results', component: MatchingResults },
   { path: 'student-requests', component: StudentRequests },

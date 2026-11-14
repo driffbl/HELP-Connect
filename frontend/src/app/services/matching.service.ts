@@ -39,6 +39,7 @@ export class MatchingService {
             'https://media.istockphoto.com/id/519078727/photo/male-silhouette-as-avatar-profile-picture.webp?b=1&s=612x612&w=0&k=20&c=e-ihFzR4K3T7-bu3IHpBbRz2C-BY4WKB1Qn-rQysAFs=',
           support_category: row.Category_name,
           all_categories: row.All_Categories || row.Category_name || '',
+          skills_list: row.Skills_List || '',
           skills_description: row.Bio || '',
           preferred_mode: row.Preferred_Support_Mode,
           availability_notes: row.Availability || '',
@@ -140,5 +141,10 @@ export class MatchingService {
         })),
       ),
     );
+  }
+  // Iteration 2: Get skills for dropdown
+  getSkillsByCategory(category: string): Observable<Array<{ Skills_id: number; Skill_name: string }>> {
+    const params = new HttpParams().set('category', category);
+    return this.http.get<Array<{ Skills_id: number; Skill_name: string }>>(`${this.apiUrl}/skills`, { params });
   }
 }
