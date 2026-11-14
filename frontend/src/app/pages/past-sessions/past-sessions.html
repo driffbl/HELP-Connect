@@ -2,25 +2,56 @@
   @if (!signedIn()) {
     <app-auth-notice />
   } @else {
-    @if (role() === 'volunteer') {
-      <section class="summary" data-testid="rating-summary">
-        @if (average(); as avg) {
-          <span class="avg" data-testid="average-rating">{{ avg | number: '1.1-1' }}</span>
+    <section class="summary" data-testid="summary" aria-label="Summary of your past sessions">
+      <div class="stat">
+        <span class="num" data-testid="stat-total">{{ summary().total }}</span>
+        <span class="label">Total sessions</span>
+      </div>
+      <div class="stat">
+        <span class="num" data-testid="stat-completed">{{ summary().completed }}</span>
+        <span class="label">Completed</span>
+      </div>
+      <div class="stat">
+        <span class="num" data-testid="stat-cancelled">{{ summary().cancelled }}</span>
+        <span class="label">Cancelled</span>
+      </div>
+      <div class="stat rating" data-testid="rating-summary">
+        @if (summary().average; as avg) {
+          <span class="num" data-testid="average-rating">{{ avg | number: '1.1-1' }}</span>
           <app-star-rating [value]="avg" [readonly]="true" />
-          <span class="count" data-testid="review-count">
-            {{ reviewCount() }} {{ reviewCount() === 1 ? 'review' : 'reviews' }}
+          <span class="label" data-testid="review-count">
+            {{ ratingLabel() }} · {{ ratingNoun() }}
           </span>
         } @else {
-          <span data-testid="no-rating">No ratings yet</span>
+          <span class="num none" data-testid="no-rating">–</span>
+          <span class="label">{{ ratingLabel() }} · No ratings yet</span>
         }
-      </section>
-    }
+      </div>
+    </section>
 
     @if (status() === 'error') {
       <div class="state error" role="alert" data-testid="load-error">
         <span>{{ error() }}</span>
         <button type="button" data-testid="retry" (click)="retry()">Try again</button>
       </div>
+    }
+
+    @if (total() > 0) {
+      <app-session-filter-bar
+        [filters]="filters()"
+        [sort]="sort()"
+        [role]="role()"
+        [categories]="categories()"
+        (filtersChange)="setFilters($event)"
+        (sortChange)="setSort($event)"
+      />
+      <p class="result-count" aria-live="polite" data-testid="result-count">
+        Showing {{ rows().length }} of {{ matching().length }}
+        {{ matching().length === 1 ? 'session' : 'sessions' }}
+        @if (isFiltered()) {
+          (filtered from {{ total() }})
+        }
+      </p>
     }
 
     @if (rows().length > 0) {
@@ -35,8 +66,24 @@
           <app-session-actions [session]="r.session" [role]="role()" />
         </app-session-card>
       }
+      @if (remaining() > 0) {
+        <div class="more">
+          <button type="button" data-testid="show-more" (click)="showMore()">
+            Show more ({{ remaining() }} remaining)
+          </button>
+        </div>
+      }
     } @else if (status() === 'ready') {
-      <p class="empty" data-testid="no-sessions">No past sessions found</p>
+      @if (total() === 0) {
+        <p class="empty" data-testid="no-sessions">No past sessions found</p>
+      } @else {
+        <p class="empty" data-testid="no-matches">No sessions match your filters.</p>
+        <div class="more">
+          <button type="button" data-testid="clear-from-empty" (click)="clearFilters()">
+            Clear filters
+          </button>
+        </div>
+      }
     } @else if (status() !== 'error') {
       <p class="state" data-testid="loading">Loading past sessions…</p>
     }

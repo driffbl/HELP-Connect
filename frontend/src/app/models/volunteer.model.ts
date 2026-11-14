@@ -11,6 +11,7 @@ export interface Volunteer {
   availability_notes: string;
   all_categories?: string;
   is_active: boolean;
-  rating: number;
+  rating: number | null; // average of the students' ratings, or null when there are none yet
+  review_count: number; // how many ratings that average is made of
   completed_sessions: number;
 }

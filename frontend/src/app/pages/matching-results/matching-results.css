@@ -249,6 +249,16 @@
   font-size: 0.85rem;
 }
 
+.rating-row.no-rating {
+  color: #6b6b6b;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.sessions-done {
+  margin-bottom: 10px;
+}
+
 /* Action Buttons */
 .btn-select,
 .btn-primary {

@@ -12,6 +12,7 @@
     <a routerLink="/sessions" *ngIf="isLoggedIn">My Sessions</a>
     <a routerLink="/past-sessions" *ngIf="isLoggedIn">Past Sessions</a>
     <a routerLink="/volunteer/register" *ngIf="isLoggedIn">Volunteer</a>
+    <app-notification-bell *ngIf="isLoggedIn" />
     <a routerLink="/" *ngIf="isLoggedIn" (click)="logout()" class="logout-btn">
       Logout
     </a>

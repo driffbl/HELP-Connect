@@ -33,6 +33,7 @@ describe('MatchingResults', () => {
       availability_notes: '',
       preferred_mode: 'Virtual',
       rating: 5,
+      review_count: 4,
       completed_sessions: 10,
     };
 

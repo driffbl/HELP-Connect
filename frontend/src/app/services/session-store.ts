@@ -66,20 +66,6 @@ export class SessionStore {
       .map((s) => ({ session: s, status: effectiveStatus(s, now), review: s.review }));
   });
 
-  /** Reviews the current volunteer has received. Always 0 for a student. */
-  readonly reviewCount = computed(() =>
-    this.auth.user().role === 'volunteer'
-      ? this.pastSessions().filter((r) => r.review !== null).length
-      : 0,
-  );
-
-  /** The current volunteer's average rating, or null when there are none (always null for a student). */
-  readonly averageRating = computed<number | null>(() => {
-    if (this.auth.user().role !== 'volunteer') return null;
-    const ratings = this.pastSessions().flatMap((r) => (r.review ? [r.review.rating] : []));
-    return ratings.length === 0 ? null : ratings.reduce((sum, n) => sum + n, 0) / ratings.length;
-  });
-
   /** Loads the current user's list for the current mode. Does nothing when nobody is signed in. */
   async refresh(): Promise<void> {
     if (!this.auth.signedIn()) return;

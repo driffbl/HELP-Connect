@@ -74,11 +74,19 @@
           </p>
 
           <!-- Star Rating and Count -->
-          <div class="rating-row">
-            <span class="rating-value">{{ v.rating }}</span>
-            <span class="star-icon">&#9734;</span>
-            <span class="reviews-count">({{ v.completed_sessions }})</span>
+          <div class="rating-row" *ngIf="v.rating !== null; else noRating">
+            <span class="rating-value">{{ v.rating | number: '1.1-1' }}</span>
+            <span class="star-icon">&#9733;</span>
+            <span class="reviews-count">
+              ({{ v.review_count }} {{ v.review_count === 1 ? 'review' : 'reviews' }})
+            </span>
           </div>
+          <ng-template #noRating>
+            <div class="rating-row no-rating">No reviews yet</div>
+          </ng-template>
+          <p class="meta-text sessions-done">
+            <strong>Sessions completed:</strong> {{ v.completed_sessions }}
+          </p>
 
           <!-- Select Action Trigger -->
           <button type="button" class="btn-select" (click)="initiateSelection(v, $event)">

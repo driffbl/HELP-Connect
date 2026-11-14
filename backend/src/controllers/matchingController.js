@@ -29,9 +29,26 @@ exports.findVolunteers = async (req, res) => {
                 v.Availability,
                 v.Preferred_Support_Mode,
                 v.Bio,
-                GROUP_CONCAT(DISTINCT c_all.Category_name SEPARATOR ', ') AS All_Categories
+                GROUP_CONCAT(DISTINCT c_all.Category_name SEPARATOR ', ') AS All_Categories,
+                rt.Rating,
+                COALESCE(rt.Review_count, 0) AS Review_count,
+                COALESCE(cs.Completed_sessions, 0) AS Completed_sessions
             FROM Volunteer v
                      JOIN User u ON v.User_id = u.User_id
+                     -- UC3: real average rating and review count, from the students' feedback
+                     LEFT JOIN (
+                         SELECT s.Volunteer_user_id, AVG(f.Rating) AS Rating, COUNT(f.Feedback_id) AS Review_count
+                         FROM Support_session s
+                                  JOIN Feedback f ON f.Session_id = s.Session_id
+                         GROUP BY s.Volunteer_user_id
+                     ) rt ON rt.Volunteer_user_id = v.User_id
+                     -- UC3: how many sessions the volunteer has completed
+                     LEFT JOIN (
+                         SELECT Volunteer_user_id, COUNT(*) AS Completed_sessions
+                         FROM Support_session
+                         WHERE Session_status = 'Completed'
+                         GROUP BY Volunteer_user_id
+                     ) cs ON cs.Volunteer_user_id = v.User_id
                      JOIN Volunteer_Category vc_filter ON v.Volunteer_id = vc_filter.Volunteer_id
                      JOIN Category c_filter ON vc_filter.Category_id = c_filter.Category_id
                      JOIN Volunteer_Category vc_all ON v.Volunteer_id = vc_all.Volunteer_id
@@ -48,7 +65,7 @@ exports.findVolunteers = async (req, res) => {
             queryParams.push(`%${dayName}%`, `%${dayName.substring(0, 3)}%`);
         }
 
-        query += ` GROUP BY v.Volunteer_id, u.User_name, u.Email, v.Availability, v.Preferred_Support_Mode, v.Bio`;
+        query += ` GROUP BY v.Volunteer_id, u.User_name, u.Email, v.Availability, v.Preferred_Support_Mode, v.Bio, rt.Rating, rt.Review_count, cs.Completed_sessions`;
 
         const [volunteers] = await db.query(query, queryParams);
 
