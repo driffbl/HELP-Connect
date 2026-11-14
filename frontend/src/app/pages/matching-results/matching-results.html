@@ -131,6 +131,10 @@
         You are about to send a support request to <strong>{{ selectedVolunteer?.user_name }}</strong>.
         Do you want to confirm this selection or view other volunteers?
       </p>
+      <div *ngIf="requestError" class="modal-error" role="alert" data-testid="request-error">
+        <span class="modal-error-icon" aria-hidden="true">!</span>
+        <span>{{ requestError }}</span>
+      </div>
       <div class="modal-actions-row">
         <button type="button" class="btn-secondary" (click)="cancelSelection($event)">View Others</button>
         <button type="button" class="btn-primary" (click)="confirmSelection($event)">Confirm</button>

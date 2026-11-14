@@ -170,6 +170,12 @@
   background-color: #f1f3f4 !important;
 }
 
+.days button.past {
+  color: #c4c9cf;
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+
 .days button.selected {
   background-color: #1e293b !important;
   color: #ffffff !important;

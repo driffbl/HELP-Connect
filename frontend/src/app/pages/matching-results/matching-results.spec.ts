@@ -117,8 +117,8 @@ describe('MatchingResults Component (Unit Tests)', () => {
       '2026-10-12',
       '11:00',
     );
-    expect(component.volunteers.length).toBe(2);
-    expect(component.volunteers[0].user_name).toBe('Alex Tan');
+    expect(component.rawVolunteers.length).toBe(2);
+    expect(component.rawVolunteers[0].user_name).toBe('Alex Tan');
     expect(component.isLoading).toBe(false);
   });
 
@@ -130,7 +130,7 @@ describe('MatchingResults Component (Unit Tests)', () => {
 
     component.fetchMatchingVolunteers();
 
-    expect(component.volunteers.length).toBe(0);
+    expect(component.rawVolunteers.length).toBe(0);
     expect(component.isLoading).toBe(false);
   });
 
@@ -139,7 +139,7 @@ describe('MatchingResults Component (Unit Tests)', () => {
 
     component.fetchMatchingVolunteers();
 
-    expect(component.volunteers).toEqual([]);
+    expect(component.rawVolunteers).toEqual([]);
     expect(component.isLoading).toBe(false);
   });
 
@@ -195,6 +195,59 @@ describe('MatchingResults Component (Unit Tests)', () => {
     expect(matchingServiceMock.assignVolunteer).toHaveBeenCalledWith(86, 13);
     expect(component.showReviewModal).toBe(false);
     expect(component.showConfirmedModal).toBe(true);
+  });
+
+  it('should show the server message inside the dialog, not a pop-up, when a request is refused', () => {
+    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
+    matchingServiceMock.createRequest.mockReturnValue(
+      throwError(() => ({ error: { message: 'You cannot request support from yourself.' } })),
+    );
+    component.requestId = null;
+    component.selectedVolunteer = mockVolunteers[0];
+    component.showReviewModal = true;
+
+    component.confirmSelection();
+
+    expect(component.requestError).toBe('You cannot request support from yourself.');
+    expect(component.showReviewModal).toBe(true); // the dialog stays open so another volunteer can be chosen
+    expect(component.showConfirmedModal).toBe(false);
+    expect(alertSpy).not.toHaveBeenCalled();
+    alertSpy.mockRestore();
+  });
+
+  it('should clear the error message when the dialog is closed or another volunteer is selected', () => {
+    component.requestError = 'That time slot is already booked for this volunteer.';
+    component.cancelSelection();
+    expect(component.requestError).toBe('');
+
+    component.requestError = 'old error';
+    component.initiateSelection(mockVolunteers[1]);
+    expect(component.requestError).toBe('');
+  });
+
+  it('should go back to My Sessions when choosing another volunteer for an existing request', () => {
+    component.requestId = 86;
+
+    component.onGoBack();
+
+    expect(routerMock.navigate).toHaveBeenCalledWith(['/sessions']);
+  });
+
+  it('should go back to the request form when this is a new request', () => {
+    component.requestId = null;
+
+    component.onGoBack();
+
+    expect(routerMock.navigate).toHaveBeenCalledWith(['/request-support'], expect.anything());
+  });
+
+  it('should go to My Sessions after the request confirmation is closed', () => {
+    component.showConfirmedModal = true;
+
+    component.closeConfirmedModal();
+
+    expect(component.showConfirmedModal).toBe(false);
+    expect(routerMock.navigate).toHaveBeenCalledWith(['/sessions']);
   });
 
   it('should navigate back to request form preserving criteria on onChangeCriteria', () => {

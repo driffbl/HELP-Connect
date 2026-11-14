@@ -44,8 +44,9 @@
               <button
                 type="button"
                 *ngFor="let day of calendarDays"
-                [disabled]="!day"
+                [disabled]="!day || isPastDay(day)"
                 [class.empty]="!day"
+                [class.past]="isPastDay(day)"
                 [class.selected]="day === selectedDay"
                 [class.today]="day === currentDay && !selectedDay"
                 (click)="selectDay(day)">
