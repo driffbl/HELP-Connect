@@ -23,6 +23,8 @@ export class ResetPassword {
   success = signal('');
   loading = signal(false);
   resending = signal(false);
+  
+  showPassword = false; // <--- ADDED THIS LINE
 
   onSubmit() {
     this.error.set('');
@@ -52,7 +54,6 @@ export class ResetPassword {
     });
   }
 
-  // ADDED: Function to resend the OTP
   resendCode() {
     this.error.set('');
     this.success.set('');
