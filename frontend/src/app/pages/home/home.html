@@ -33,12 +33,12 @@
     <button type="button" class="btn-primary" routerLink="/request-support" style="margin-bottom: 12px;">
       I would like to request support
     </button>
-    
+
     <!-- LINKED TO ZU YUAN'S MY SESSIONS PAGE (requests now show up there as Pending sessions) -->
     <button type="button" class="btn-primary" routerLink="/sessions" style="margin-bottom: 12px;">
       I would like to check on My Sessions
     </button>
-    
+
     <!-- YOUR VOLUNTEER BUTTON -->
     <button type="button" class="btn-primary" (click)="onVolunteerClick()" style="margin-bottom: 12px;">
       {{ isVolunteer() ? 'View My Volunteer Profile' : 'I would like to become a volunteer' }}
@@ -46,16 +46,12 @@
   </div>
 
   <div class="quick-links">
-    <button type="button" class="quick-card" (click)="showComingSoon()">
-      <div class="quick-icon">👥</div>
-      <div class="quick-label">Browse Volunteers</div>
-    </button>
-    
+
     <a routerLink="/dashboard" class="quick-card">
       <div class="quick-icon">👤</div>
       <div class="quick-label">Profile</div>
     </a>
-    
+
     <button type="button" class="quick-card" routerLink="/past-sessions">
       <div class="quick-icon">⏱</div>
       <div class="quick-label">Past Sessions</div>
