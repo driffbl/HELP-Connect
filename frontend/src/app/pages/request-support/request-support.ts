@@ -19,11 +19,12 @@ export class RequestSupport implements OnInit {
 
   editRequestId: number | null = null;
 
-  currentYear: number = 2026;
-  currentMonth: number = 9;
-  currentMonthName: string = 'October';
-  currentDay: number = 1;
-  selectedDay: number = 1;
+  // The calendar opens on today's month with today selected (it used to be fixed to October 2026).
+  currentYear: number = new Date().getFullYear();
+  currentMonth: number = new Date().getMonth();
+  currentMonthName: string = '';
+  currentDay: number = new Date().getDate();
+  selectedDay: number = new Date().getDate();
   calendarDays: (number | null)[] = [];
 
   isSubmitted: boolean = false;
@@ -89,11 +90,27 @@ export class RequestSupport implements OnInit {
     }
   }
 
+  /** True for a day in the shown month that is before today: it cannot be requested. */
+  isPastDay(day: number | null): boolean {
+    if (!day) return false;
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    return new Date(this.currentYear, this.currentMonth, day) < startOfToday;
+  }
+
   selectDay(day: number | null): void {
-    if (day) this.selectedDay = day;
+    if (day && !this.isPastDay(day)) this.selectedDay = day;
   }
 
   prevMonth(): void {
+    // Months before the current one only hold past days, so do not go back to them.
+    const today = new Date();
+    if (
+      this.currentYear < today.getFullYear() ||
+      (this.currentYear === today.getFullYear() && this.currentMonth <= today.getMonth())
+    ) {
+      return;
+    }
     if (this.currentMonth === 0) {
       this.currentMonth = 11;
       this.currentYear--;
@@ -130,6 +147,14 @@ export class RequestSupport implements OnInit {
 
     if (!this.category || !this.description.trim() || !this.supportMode || !this.selectedDay) {
       this.errorMessage = 'Please complete all required fields before searching for volunteers.';
+      return;
+    }
+
+    // The chosen day and time must still be ahead (the server checks this too).
+    const [hour, minute] = (this.selectedTime || '00:00').split(':').map(Number);
+    const chosen = new Date(this.currentYear, this.currentMonth, this.selectedDay, hour || 0, minute || 0);
+    if (chosen <= new Date()) {
+      this.errorMessage = 'The preferred date and time have already passed. Please choose a later time.';
       return;
     }
 

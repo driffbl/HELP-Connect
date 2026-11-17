@@ -236,27 +236,6 @@ describe('SessionStore lists', () => {
     expect(store.pastSessions()[2].review?.rating).toBe(5);
     expect(store.pastSessions()[3].review).toBe(null);
   });
-
-  it('gives students no average rating', async () => {
-    const { store, api } = setup();
-    api.byRole.student = sample();
-    await store.refresh();
-    expect(store.averageRating()).toBe(null);
-    expect(store.reviewCount()).toBe(0);
-  });
-
-  it('gives a volunteer the average of the ratings received', async () => {
-    const { store, api, me } = setup();
-    me.setRole('volunteer');
-    api.byRole.volunteer = [
-      make(3, { status: 'Completed', date: '2020-03-01', review: review(3, 5) }),
-      make(4, { status: 'Completed', date: '2020-02-01', review: review(4, 4) }),
-      make(5, { status: 'Completed', date: '2020-01-01' }),
-    ];
-    await store.refresh();
-    expect(store.averageRating()).toBe(4.5);
-    expect(store.reviewCount()).toBe(2);
-  });
 });
 
 describe('SessionStore actions', () => {

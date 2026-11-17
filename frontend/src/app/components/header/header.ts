@@ -106,12 +106,14 @@ export class Header implements OnInit, OnDestroy {
     const msg = (item.message || item.Message || '').toLowerCase();
     const sessionId = item.sessionId || item.Session_id;
 
-    if (msg.includes('requested') || msg.includes('withdrawn')) {
+    // Session notifications (request, accept, decline, cancel, complete) open My Sessions, where those
+    // actions now live. Only notifications that carry no session fall back to the older request pages.
+    if (sessionId) {
+      this.router.navigate(['/sessions']);
+    } else if (msg.includes('requested') || msg.includes('withdrawn')) {
       this.router.navigate(['/volunteer-inbox']);
     } else if (msg.includes('rejected') || msg.includes('declined')) {
       this.router.navigate(['/student-requests']);
-    } else if (sessionId) {
-      this.router.navigate(['/sessions']);
     }
   }
 

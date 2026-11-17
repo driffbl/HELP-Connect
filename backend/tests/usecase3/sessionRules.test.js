@@ -57,7 +57,7 @@ test('roleOf: tells which side a user is on', () => {
   assert.equal(rules.roleOf(make(), 3), null);
 });
 
-test('a volunteer-made proposal can only be cancelled by the volunteer (future reschedule)', () => {
+test('a volunteer-made proposal can only be cancelled by the volunteer', () => {
   const p = make({ status: 'Pending', proposedBy: 'volunteer' });
   assert.equal(rules.canCancel(p, 'volunteer', before), true);
   assert.equal(rules.canCancel(p, 'student', before), false);

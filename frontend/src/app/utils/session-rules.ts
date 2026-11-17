@@ -39,10 +39,6 @@ export function canCancel(s: Session, role: UserRole, now: Date = new Date()): b
   return s.status === 'Pending' && !isExpiredPending(s, now) && s.proposedBy === role;
 }
 
-export function canReschedule(s: Session): boolean {
-  return s.status === 'Scheduled';
-}
-
 /** Volunteer only, Scheduled only, never before the start time. */
 export function canComplete(s: Session, role: UserRole, now: Date = new Date()): boolean {
   return role === 'volunteer' && s.status === 'Scheduled' && now >= sessionStart(s);

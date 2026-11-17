@@ -71,7 +71,6 @@ describe('SessionActions for a Scheduled session', () => {
     expect((find('complete') as HTMLButtonElement).disabled).toBe(true);
     expect(find('complete-hint')).not.toBeNull();
     expect(find('cancel')).not.toBeNull();
-    expect(find('reschedule')).not.toBeNull();
   });
 
   it('enables Mark as Complete once the session has started', () => {
@@ -87,17 +86,9 @@ describe('SessionActions for a Scheduled session', () => {
     expect(find('rate-volunteer')).toBeNull();
   });
 
-  it('Reschedule only shows the coming soon message', () => {
-    const alertSpy = vi.fn();
-    vi.stubGlobal('alert', alertSpy);
-    try {
-      const { find, store } = setup(make(), 'student');
-      find('reschedule')!.click();
-      expect(alertSpy).toHaveBeenCalledWith('This feature will be available in the next update.');
-      expect(store.cancel).not.toHaveBeenCalled();
-    } finally {
-      vi.unstubAllGlobals();
-    }
+  it('has no Reschedule button', () => {
+    expect(setup(make(), 'student').el.textContent).not.toContain('Reschedule');
+    expect(setup(make(), 'volunteer').el.textContent).not.toContain('Reschedule');
   });
 
   it('cancels only after the person confirms, then reports the updated session', async () => {
@@ -150,7 +141,6 @@ describe('SessionActions for other statuses', () => {
     const { find } = setup(make({ status: 'Cancelled' }), 'student');
     expect(find('cancelled-note')).not.toBeNull();
     expect(find('cancel')).toBeNull();
-    expect(find('reschedule')).toBeNull();
   });
 
   const DECLINED = { status: 'Cancelled', requestId: 12, requestStatus: 'Rejected' } as const;

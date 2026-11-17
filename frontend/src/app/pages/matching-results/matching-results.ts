@@ -34,6 +34,9 @@ export class MatchingResults implements OnInit {
   selectedSort: string = 'rating_desc'; // Default: Highest Rated
 
   showReviewModal: boolean = false;
+  // Message from the server when a request is refused (for example a time slot that is already booked).
+  // It is shown inside the confirm dialog instead of a browser pop-up.
+  requestError = '';
   showConfirmedModal: boolean = false;
   selectedVolunteer: Volunteer | null = null;
 
@@ -139,6 +142,7 @@ export class MatchingResults implements OnInit {
   initiateSelection(volunteer: Volunteer, event?: Event): void {
     if (event) event.stopPropagation();
     this.selectedVolunteer = volunteer;
+    this.requestError = '';
     this.showReviewModal = true;
     this.cdr.detectChanges();
   }
@@ -147,12 +151,14 @@ export class MatchingResults implements OnInit {
     if (event) event.stopPropagation();
     this.showReviewModal = false;
     this.selectedVolunteer = null;
+    this.requestError = '';
     this.cdr.detectChanges();
   }
 
   confirmSelection(event?: Event): void {
     if (event) event.stopPropagation();
     if (!this.selectedVolunteer) return;
+    this.requestError = '';
 
     if (this.requestId) {
       this.matchingService
@@ -165,7 +171,8 @@ export class MatchingResults implements OnInit {
           },
           error: (err) => {
             console.error('Error reassigning volunteer:', err);
-            alert(err?.error?.message || 'Failed to update volunteer assignment.');
+            this.requestError = err?.error?.message || 'Failed to update volunteer assignment.';
+            this.cdr.detectChanges();
           },
         });
       return;
@@ -196,7 +203,8 @@ export class MatchingResults implements OnInit {
       },
       error: (err) => {
         console.error('Failed to create support request:', err);
-        alert(err?.error?.message || 'Database error creating request.');
+        this.requestError = err?.error?.message || 'Database error creating request.';
+        this.cdr.detectChanges();
       },
     });
   }
@@ -206,12 +214,14 @@ export class MatchingResults implements OnInit {
     this.showConfirmedModal = false;
     this.selectedVolunteer = null;
     this.cdr.detectChanges();
-    this.router.navigate(['/student-requests']);
+    // The new request is a Pending session now, so show it in My Sessions.
+    this.router.navigate(['/sessions']);
   }
 
   onGoBack(): void {
     if (this.requestId) {
-      this.router.navigate(['/student-requests']);
+      // Choosing another volunteer starts from My Sessions, so go back there.
+      this.router.navigate(['/sessions']);
     } else {
       this.onChangeCriteria();
     }

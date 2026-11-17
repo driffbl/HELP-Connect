@@ -36,7 +36,9 @@ describe('RequestSupport Component (Unit Tests)', () => {
   it('should create the component and initialize the calendar', () => {
     expect(component).toBeTruthy();
     expect(component.calendarDays.length).toBeGreaterThan(0);
-    expect(component.currentMonthName).toBe('October');
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    expect(component.currentMonthName).toBe(monthNames[new Date().getMonth()]); // opens on the current month
+    expect(component.currentDay).toBe(new Date().getDate());
   });
 
   // =========================================================================
@@ -68,10 +70,15 @@ describe('RequestSupport Component (Unit Tests)', () => {
     component.category = 'Academic Support';
     component.description = 'Need help with Python loops';
     component.supportMode = 'Virtual';
+    // A date in the next month is always in the future, whatever day the test runs.
+    const future = new Date();
+    future.setDate(1);
+    future.setMonth(future.getMonth() + 1);
+    component.currentYear = future.getFullYear();
+    component.currentMonth = future.getMonth();
     component.selectedDay = 15;
     component.selectedTime = '10:00';
-    component.currentYear = 2026;
-    component.currentMonth = 9; // October (0-indexed)
+    const expectedDate = `${future.getFullYear()}-${String(future.getMonth() + 1).padStart(2, '0')}-15`;
 
     // Act
     component.onSubmit();
@@ -83,7 +90,7 @@ describe('RequestSupport Component (Unit Tests)', () => {
         category: 'Academic Support',
         description: 'Need help with Python loops',
         mode: 'Virtual',
-        date: '2026-10-15',
+        date: expectedDate,
         time: '10:00',
       },
     });
@@ -93,7 +100,8 @@ describe('RequestSupport Component (Unit Tests)', () => {
   // TC03: Boundary / Edge Test Case (Calendar Slot Overwrite Protection)
   // =========================================================================
   it('TC03: should update selectedDay when a valid day is clicked and ignore null padding slots', () => {
-    // Step 1: Click a valid calendar day
+    // Step 1: Click a valid calendar day (in next month, so it is never in the past)
+    component.nextMonth();
     component.selectDay(22);
     expect(component.selectedDay).toBe(22);
 
@@ -108,16 +116,53 @@ describe('RequestSupport Component (Unit Tests)', () => {
   // Calendar Navigation Controls
   // =========================================================================
   it('should increment month on nextMonth() and decrement on prevMonth()', () => {
-    component.currentMonth = 9; // October
-    component.currentYear = 2026;
+    const start = component.currentMonth;
 
     component.nextMonth();
-    expect(component.currentMonth).toBe(10); // November
-    expect(component.currentMonthName).toBe('November');
+    expect(component.currentMonth).toBe((start + 1) % 12);
 
     component.prevMonth();
-    expect(component.currentMonth).toBe(9); // Back to October
-    expect(component.currentMonthName).toBe('October');
+    expect(component.currentMonth).toBe(start); // Back to the current month
+  });
+
+  // =========================================================================
+  // Past dates cannot be requested
+  // =========================================================================
+  it('should not go back to a month before the current one', () => {
+    const start = component.currentMonth;
+    component.prevMonth();
+    expect(component.currentMonth).toBe(start);
+  });
+
+  it('should treat a day before today as past, and today and later days as selectable', () => {
+    const today = new Date();
+    expect(component.isPastDay(null)).toBe(false);
+    expect(component.isPastDay(today.getDate())).toBe(false);
+    if (today.getDate() > 1) {
+      expect(component.isPastDay(today.getDate() - 1)).toBe(true);
+      const before = component.selectedDay;
+      component.selectDay(today.getDate() - 1);
+      expect(component.selectedDay).toBe(before); // a past day cannot be selected
+    }
+  });
+
+  it('should refuse a date and time that have already passed and not search', () => {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    component.category = 'Academic Support';
+    component.description = 'Need help with Python loops';
+    component.supportMode = 'Virtual';
+    component.currentYear = yesterday.getFullYear();
+    component.currentMonth = yesterday.getMonth();
+    component.selectedDay = yesterday.getDate();
+    component.selectedTime = '09:00';
+
+    component.onSubmit();
+
+    expect(component.errorMessage).toBe(
+      'The preferred date and time have already passed. Please choose a later time.',
+    );
+    expect(routerMock.navigate).not.toHaveBeenCalled();
   });
 
   // =========================================================================

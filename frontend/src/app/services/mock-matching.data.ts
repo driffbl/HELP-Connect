@@ -12,6 +12,7 @@ export const MOCK_VOLUNTEERS: Volunteer[] = [
     availability_notes: 'Monday / Wednesday 14:00 - 16:00',
     is_active: true,
     rating: 4.9,
+    review_count: 14,
     completed_sessions: 14,
   },
   {
@@ -24,6 +25,7 @@ export const MOCK_VOLUNTEERS: Volunteer[] = [
     availability_notes: 'Tuesday / Thursday 10:00 - 12:00',
     is_active: true,
     rating: 4.7,
+    review_count: 8,
     completed_sessions: 8,
   },
   {
@@ -36,6 +38,7 @@ export const MOCK_VOLUNTEERS: Volunteer[] = [
     availability_notes: 'Friday 15:00 - 17:00',
     is_active: true,
     rating: 4.5,
+    review_count: 5,
     completed_sessions: 5,
   },
 ];

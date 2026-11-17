@@ -11,8 +11,8 @@ type PendingAction = 'cancel' | 'decline';
 
 /**
  * The box on the right of a session card. What it shows depends on the status and on who is looking:
- *   Scheduled  volunteer: Mark as Complete (once started), Cancel, Reschedule
- *              student:   Rate volunteer (greyed out until completed), Cancel, Reschedule
+ *   Scheduled  volunteer: Mark as Complete (once started), Cancel
+ *              student:   Rate volunteer (greyed out until completed), Cancel
  *   Completed  the feedback if there is some, else "Rate volunteer" (student) or "Awaiting feedback"
  *   Cancelled  a short note; if the volunteer declined, the student can choose another volunteer
  *   Pending    Accept / Decline for the other party, Cancel for whoever asked
@@ -67,16 +67,6 @@ type PendingAction = 'cancel' | 'decline';
                 Cancel
               </button>
             }
-            <button
-              type="button"
-              class="action-btn soon"
-              data-testid="reschedule"
-              aria-disabled="true"
-              title="Coming soon"
-              (click)="comingSoon()"
-            >
-              Reschedule
-            </button>
           </div>
         }
         @case ('Completed') {
@@ -192,12 +182,11 @@ type PendingAction = 'cancel' | 'decline';
         text-decoration: none;
         cursor: pointer;
       }
-      .action-btn:hover:not(:disabled):not(.soon) {
+      .action-btn:hover:not(:disabled) {
         background: var(--brand, #e63946);
         color: #fff;
       }
-      .action-btn:disabled,
-      .action-btn.soon {
+      .action-btn:disabled {
         border-color: #d1d5db;
         background: #f9fafb;
         color: #9ca3af;
@@ -313,11 +302,6 @@ export class SessionActions {
         requestId: s.requestId,
       },
     });
-  }
-
-  /** Same message as the "coming soon" buttons on the home page. */
-  protected comingSoon(): void {
-    alert('This feature will be available in the next update.');
   }
 
   private async perform(run: () => Promise<ActionResult>): Promise<void> {
