@@ -1,7 +1,8 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, HostListener, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
 import { NotificationService, AppNotification } from '../../services/notification.service';
+import { Api } from '../../services/api'; // Added for volunteer check
 import { Subscription, interval } from 'rxjs';
 
 @Component({
@@ -12,24 +13,32 @@ import { Subscription, interval } from 'rxjs';
   styleUrl: './header.css',
 })
 export class Header implements OnInit, OnDestroy {
+  private router = inject(Router);
+  private notificationService = inject(NotificationService);
+  private cdr = inject(ChangeDetectorRef);
+  private api = inject(Api); // Inject API to check volunteer status
+
   isLoggedIn = !!localStorage.getItem('token');
+  isVolunteer = signal(false); // Track if they are a volunteer
+  
   notifications: any[] = [];
   unreadCount: number = 0;
   showDropdown: boolean = false;
   private pollSub?: Subscription;
 
-  constructor(
-    private notificationService: NotificationService,
-    private router: Router,
-    private cdr: ChangeDetectorRef,
-  ) {}
-
   ngOnInit(): void {
     this.isLoggedIn = !!localStorage.getItem('token');
+    
     if (this.isLoggedIn) {
       this.fetchNotifications();
       // Auto-refresh notifications every 15 seconds
       this.pollSub = interval(15000).subscribe(() => this.fetchNotifications());
+      
+      // Check if user is a volunteer to change the navbar link
+      this.api.getVolunteerProfile().subscribe({
+        next: () => this.isVolunteer.set(true),
+        error: () => this.isVolunteer.set(false)
+      });
     }
   }
 
@@ -56,7 +65,6 @@ export class Header implements OnInit, OnDestroy {
     }
   }
 
-  // Close dropdown when clicking anywhere outside the header
   @HostListener('document:click')
   closeDropdown(): void {
     this.showDropdown = false;

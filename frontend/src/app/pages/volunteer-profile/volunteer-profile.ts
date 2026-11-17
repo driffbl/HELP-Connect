@@ -25,9 +25,14 @@ export class VolunteerProfile implements OnInit {
   skills = signal<{ Skills_id: number; Skill_name: string }[]>([]);
   
   // Form state
-  editForm = { availability: '', preferred_mode: 'Both', bio: '' };
+  editForm = { preferred_mode: 'Both', bio: '' };
   selectedCategories = signal<number[]>([]);
   selectedSkills = signal<number[]>([]);
+
+  // Availability Multi-slot state
+  days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  times = ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'];
+  availabilitySlots = signal<{ day: string; startTime: string; endTime: string }[]>([]);
 
   ngOnInit() {
     this.loadProfile();
@@ -51,17 +56,56 @@ export class VolunteerProfile implements OnInit {
 
   startEditing() {
     const v = this.volunteer();
-    this.editForm.availability = v.Availability;
     this.editForm.preferred_mode = v.Preferred_Mode;
     this.editForm.bio = v.Bio || '';
     this.selectedCategories.set(v.categories.map((c: any) => c.Category_id));
     this.selectedSkills.set(v.skills.map((s: any) => s.Skills_id));
+    
+    // Parse the availability string back into slots
+    this.availabilitySlots.set([]);
+    if (v.Availability) {
+      const slots = v.Availability.split(', ');
+      slots.forEach((slotStr: string) => {
+        const parts = slotStr.split(' ');
+        if (parts.length >= 4) {
+          this.availabilitySlots.update(current => [...current, {
+            day: parts[0],
+            startTime: parts[1],
+            endTime: parts[3]
+          }]);
+        }
+      });
+    }
+    
+    // If no slots found, add one default slot
+    if (this.availabilitySlots().length === 0) {
+      this.availabilitySlots.set([{ day: 'Monday', startTime: '14:00', endTime: '16:00' }]);
+    }
+
     this.isEditing.set(true);
     this.success.set('');
   }
 
   cancelEditing() {
     this.isEditing.set(false);
+  }
+
+  addSlot() {
+    this.availabilitySlots.set([
+      ...this.availabilitySlots(),
+      { day: 'Monday', startTime: '14:00', endTime: '16:00' }
+    ]);
+  }
+
+  removeSlot(index: number) {
+    const current = this.availabilitySlots();
+    this.availabilitySlots.set(current.filter((_, i) => i !== index));
+  }
+
+  getFormattedAvailability(): string {
+    return this.availabilitySlots()
+      .map(slot => `${slot.day} ${slot.startTime} - ${slot.endTime}`)
+      .join(', ');
   }
 
   toggleCategory(id: number) {
@@ -80,8 +124,19 @@ export class VolunteerProfile implements OnInit {
     this.error.set('');
     this.success.set('');
 
+    // NEW: Validation check for categories
+    if (this.selectedCategories().length === 0) {
+      this.error.set('Please select at least one support category.');
+      return;
+    }
+
+    if (this.availabilitySlots().length === 0) {
+      this.error.set('Please add at least one availability slot.');
+      return;
+    }
+
     this.api.updateVolunteer({
-      availability: this.editForm.availability,
+      availability: this.getFormattedAvailability(),
       preferred_mode: this.editForm.preferred_mode,
       bio: this.editForm.bio,
       category_ids: this.selectedCategories(),

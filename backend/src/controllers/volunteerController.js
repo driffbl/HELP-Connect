@@ -34,14 +34,12 @@ exports.register = async (req, res) => {
 
     const volunteerId = result.insertId;
 
-    // Insert categories
     const catValues = category_ids.map((cid) => [volunteerId, cid]);
     await db.query(
       'INSERT INTO Volunteer_Category (Volunteer_id, Category_id) VALUES ?',
       [catValues]
     );
 
-    // Insert skills (if provided)
     if (Array.isArray(skill_ids) && skill_ids.length > 0) {
       const skillValues = skill_ids.map((sid) => [volunteerId, sid]);
       await db.query(
@@ -127,10 +125,25 @@ exports.listSkills = async (req, res) => {
     return res.status(500).json({ message: 'Server error.' });
   }
 };
+
 // PUT /api/volunteer/update
 exports.updateProfile = async (req, res) => {
   const userId = req.user.User_id;
   const { availability, preferred_mode, bio, category_ids, skill_ids } = req.body;
+
+  // --- ADDED VALIDATION HERE ---
+  if (!availability || !preferred_mode) {
+    return res.status(400).json({ message: 'Availability and preferred mode are required.' });
+  }
+
+  if (!['Virtual', 'Face-to-Face', 'Both'].includes(preferred_mode)) {
+    return res.status(400).json({ message: 'Invalid preferred mode.' });
+  }
+
+  if (!Array.isArray(category_ids) || category_ids.length === 0) {
+    return res.status(400).json({ message: 'Please select at least one support category.' });
+  }
+  // -----------------------------
 
   try {
     const [vols] = await db.query('SELECT Volunteer_id FROM Volunteer WHERE User_id = ?', [userId]);

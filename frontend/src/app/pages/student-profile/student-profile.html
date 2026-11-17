@@ -2,7 +2,7 @@
 
 <div class="page-container" style="max-width: 620px;">
   <div *ngIf="loading()" style="text-align: center; color: #666; padding: 40px;">Loading profile...</div>
-  <div class="error" *ngIf="error()">⚠️ {{ error() }}</div>
+  <div class="error" *ngIf="error()"> {{ error() }}</div>
   <div class="success" *ngIf="success()">✓ {{ success() }}</div>
 
   <div *ngIf="!loading() && user()">
